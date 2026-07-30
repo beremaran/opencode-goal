@@ -45,7 +45,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsc -p tsconfig.test.json && node --test .test-dist/test/**/*.test.js",
+    "test": "tsc -p tsconfig.test.json && node --test .test-dist/test/*.test.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm run typecheck && npm test && npm run build",
