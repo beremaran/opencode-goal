@@ -16,6 +16,7 @@
     "url": "https://github.com/beremaran/opencode-goal/issues"
   },
   "homepage": "https://github.com/beremaran/opencode-goal#readme",
+  "funding": "https://github.com/sponsors/beremaran",
   "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
