@@ -11,6 +11,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - OpenCode TUI sidebar entrypoint showing per-session goal status, objective,
   elapsed time, usage, evaluator reason, and token or turn budget progress.
+- Agent-callable `create_goal` tool with optional budgets, unfinished-goal
+  overwrite protection, and current-turn evaluation support.
 
 ## [0.1.0] - 2026-07-31
 

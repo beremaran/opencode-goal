@@ -162,6 +162,124 @@ test("sets, evaluates, continues, and completes a session goal", async (context)
   } as never);
   assert.match(String(complete), /"status": "complete"/);
   assert.match(String(complete), /"turns": 2/);
+
+  const replacement = await hooks.tool?.create_goal?.execute(
+    { objective: "documentation is current" },
+    { sessionID: "ses_parent", messageID: "asst_3" } as never,
+  );
+  assert.match(String(replacement), /Goal created/);
+  assert.match(String(replacement), /documentation is current/);
+  assert.match(String(replacement), /"status": "active"/);
+});
+
+test("lets an agent create a goal without replacing unfinished work", async (context) => {
+  const stateDirectory = await mkdtemp(
+    path.join(tmpdir(), "opencode-goal-agent-create-"),
+  );
+  context.after(() => rm(stateDirectory, { recursive: true, force: true }));
+
+  const continuations: unknown[] = [];
+  const evaluatorPrompts: unknown[] = [];
+  const toasts: unknown[] = [];
+  const messages: TranscriptMessage[] = [
+    user("usr_create", 1, "keep working until the release is published"),
+    assistant(
+      "asst_create",
+      2,
+      "I created the goal, but the release is not published yet.",
+    ),
+  ];
+
+  const client = {
+    app: { log: async () => ({ data: true }) },
+    config: {
+      get: async () => ({ data: { small_model: "test/evaluator" } }),
+    },
+    tui: {
+      showToast: async (request: unknown) => {
+        toasts.push(request);
+        return { data: true };
+      },
+    },
+    session: {
+      create: async () => ({ data: { id: "eval_agent_create" } }),
+      delete: async () => ({ data: true }),
+      messages: async () => ({ data: messages }),
+      status: async () => ({ data: {} }),
+      prompt: async (request: unknown) => {
+        evaluatorPrompts.push(request);
+        return {
+          data: {
+            parts: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  complete: false,
+                  reason: "The release has not been published.",
+                }),
+              },
+            ],
+          },
+        };
+      },
+      promptAsync: async (request: unknown) => {
+        continuations.push(request);
+        return { data: undefined };
+      },
+    },
+  };
+
+  const hooks = await GoalPlugin(
+    {
+      client,
+      project: { id: "project-agent-create" },
+      directory: "/workspace",
+    } as never,
+    { stateDirectory },
+  );
+
+  const created = await hooks.tool?.create_goal?.execute(
+    {
+      objective: "the release is published",
+      token_budget: 8_000,
+      max_turns: 4,
+    },
+    { sessionID: "ses_agent", messageID: "asst_create" } as never,
+  );
+  assert.match(String(created), /Goal created/);
+  assert.match(String(created), /"tokenBudget": 8000/);
+  assert.match(String(created), /"maxTurns": 4/);
+  assert.match(String(created), /"startedMessageID": "asst_create"/);
+  assert.equal(toasts.length, 1);
+
+  const rejected = await hooks.tool?.create_goal?.execute(
+    { objective: "silently replace the release goal" },
+    { sessionID: "ses_agent", messageID: "asst_replace" } as never,
+  );
+  assert.match(String(rejected), /unfinished goal is already active/);
+
+  const unchanged = await hooks.tool?.get_goal?.execute({}, {
+    sessionID: "ses_agent",
+  } as never);
+  assert.match(String(unchanged), /the release is published/);
+  assert.doesNotMatch(String(unchanged), /silently replace/);
+
+  await hooks.event?.({
+    event: { type: "session.idle", properties: { sessionID: "ses_agent" } },
+  } as never);
+
+  assert.equal(evaluatorPrompts.length, 1);
+  assert.match(
+    JSON.stringify(evaluatorPrompts[0]),
+    /I created the goal, but the release is not published yet/,
+  );
+  assert.equal(continuations.length, 1);
+
+  const continued = await hooks.tool?.get_goal?.execute({}, {
+    sessionID: "ses_agent",
+  } as never);
+  assert.match(String(continued), /"turns": 1/);
+  assert.match(String(continued), /"tokensUsed": 125/);
 });
 
 test("pauses an active goal when OpenCode reports an interrupted message", async (context) => {

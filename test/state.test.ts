@@ -15,6 +15,7 @@ test("persists, loads, and clears a goal atomically", async (context) => {
     directory: "/workspace",
     objective: "tests pass",
     tokenBudget: 5_000,
+    startedMessageID: "asst_goal",
     now: 10,
     goalId: "goal_123",
   });
@@ -26,6 +27,7 @@ test("persists, loads, and clears a goal atomically", async (context) => {
     await readFile(path.join(directory, "ses_123.json"), "utf8"),
   );
   assert.equal(stored.objective, "tests pass");
+  assert.equal(stored.startedMessageID, "asst_goal");
 
   await store.clear("ses_123");
   assert.equal(await store.get("ses_123"), undefined);

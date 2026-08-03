@@ -84,6 +84,7 @@ export async function evaluateGoal(
     input.messages,
     input.goal.createdAt,
     input.options.maxTranscriptChars,
+    input.goal.startedMessageID,
   );
   const model = await evaluatorModel(
     input.client,

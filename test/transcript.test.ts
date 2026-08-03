@@ -52,6 +52,18 @@ test("counts uncached parent-session tokens", () => {
   assert.equal(latestAssistant(messages, 10)?.info.id, "assistant");
 });
 
+test("anchors an agent-created goal to the tool-calling message", () => {
+  const transcript = buildTranscript(messages, Date.now(), 10_000, "assistant");
+
+  assert.doesNotMatch(transcript, /before the goal|run the tests/);
+  assert.match(transcript, /I ran them/);
+  assert.equal(totalGoalTokens(messages, Date.now(), "assistant"), 125);
+  assert.equal(
+    latestAssistant(messages, Date.now(), "assistant")?.info.id,
+    "assistant",
+  );
+});
+
 test("truncates from the front so recent evidence survives", () => {
   const transcript = buildTranscript(messages, 10, 60);
 

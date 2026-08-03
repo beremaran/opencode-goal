@@ -7,6 +7,7 @@ export type CreateGoalInput = {
   objective: string;
   tokenBudget?: number;
   maxTurns?: number;
+  startedMessageID?: string;
   now?: number;
   goalId?: string;
 };
@@ -27,6 +28,7 @@ export function createGoalState(input: CreateGoalInput): GoalState {
   };
   if (input.tokenBudget) state.tokenBudget = input.tokenBudget;
   if (input.maxTurns) state.maxTurns = input.maxTurns;
+  if (input.startedMessageID) state.startedMessageID = input.startedMessageID;
   return state;
 }
 

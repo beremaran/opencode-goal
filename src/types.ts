@@ -28,6 +28,8 @@ export type GoalState = {
   tokensUsed: number;
   tokenBudget?: number;
   maxTurns?: number;
+  /** Message that created the goal when it was started by a model tool. */
+  startedMessageID?: string;
   lastEvaluatedMessageID?: string;
   lastReason?: string;
   completionClaim?: CompletionClaim;

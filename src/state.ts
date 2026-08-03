@@ -44,6 +44,12 @@ export function parseGoalState(value: unknown): GoalState | undefined {
   }
   if (!optionalPositiveInteger(value.tokenBudget)) return undefined;
   if (!optionalPositiveInteger(value.maxTurns)) return undefined;
+  if (
+    value.startedMessageID !== undefined &&
+    (typeof value.startedMessageID !== "string" || !value.startedMessageID)
+  ) {
+    return undefined;
+  }
 
   return value as GoalState;
 }

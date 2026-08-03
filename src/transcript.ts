@@ -25,18 +25,27 @@ function partText(part: TranscriptPart): string | undefined {
 export function goalMessages(
   messages: TranscriptMessage[],
   startedAt: number,
+  startedMessageID?: string,
 ): TranscriptMessage[] {
-  return messages
-    .filter((message) => message.info.time.created >= startedAt)
-    .sort((a, b) => a.info.time.created - b.info.time.created);
+  const sorted = [...messages].sort(
+    (a, b) => a.info.time.created - b.info.time.created,
+  );
+  if (startedMessageID) {
+    const startedIndex = sorted.findIndex(
+      (message) => message.info.id === startedMessageID,
+    );
+    if (startedIndex >= 0) return sorted.slice(startedIndex);
+  }
+  return sorted.filter((message) => message.info.time.created >= startedAt);
 }
 
 export function buildTranscript(
   messages: TranscriptMessage[],
   startedAt: number,
   maxCharacters: number,
+  startedMessageID?: string,
 ): string {
-  const rendered = goalMessages(messages, startedAt)
+  const rendered = goalMessages(messages, startedAt, startedMessageID)
     .map((message) => {
       const parts = message.parts
         .map(partText)
@@ -55,8 +64,9 @@ export function buildTranscript(
 export function latestAssistant(
   messages: TranscriptMessage[],
   startedAt: number,
+  startedMessageID?: string,
 ): TranscriptMessage | undefined {
-  return goalMessages(messages, startedAt)
+  return goalMessages(messages, startedAt, startedMessageID)
     .filter((message) => message.info.role === "assistant")
     .at(-1);
 }
@@ -79,8 +89,9 @@ export function latestUserExecution(messages: TranscriptMessage[]): {
 export function totalGoalTokens(
   messages: TranscriptMessage[],
   startedAt: number,
+  startedMessageID?: string,
 ): number {
-  return goalMessages(messages, startedAt)
+  return goalMessages(messages, startedAt, startedMessageID)
     .filter((message) => message.info.role === "assistant")
     .reduce((total, message) => {
       const tokens = message.info.tokens;

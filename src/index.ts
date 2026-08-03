@@ -177,13 +177,21 @@ async function handleIdle(input: {
     }
 
     const messages = asTranscriptMessages(response.data);
-    const assistant = latestAssistant(messages, goal.createdAt);
+    const assistant = latestAssistant(
+      messages,
+      goal.createdAt,
+      goal.startedMessageID,
+    );
     if (!assistant || assistant.info.id === goal.lastEvaluatedMessageID) return;
 
     const progress: GoalState = {
       ...goal,
       turns: goal.turns + 1,
-      tokensUsed: totalGoalTokens(messages, goal.createdAt),
+      tokensUsed: totalGoalTokens(
+        messages,
+        goal.createdAt,
+        goal.startedMessageID,
+      ),
       updatedAt: Date.now(),
       lastEvaluatedMessageID: assistant.info.id,
     };
@@ -462,6 +470,57 @@ export const GoalPlugin: Plugin = async (input, rawOptions) => {
     },
 
     tool: {
+      create_goal: tool({
+        description:
+          "Create a persistent goal for this session only when the user explicitly requests one. Fails if an unfinished goal exists; do not replace or abandon an existing goal.",
+        args: {
+          objective: tool.schema
+            .string()
+            .trim()
+            .min(1)
+            .describe(
+              "The concrete condition that will make the goal complete",
+            ),
+          token_budget: tool.schema
+            .number()
+            .int()
+            .positive()
+            .optional()
+            .describe(
+              "Optional token budget; omit unless the user explicitly requested one",
+            ),
+          max_turns: tool.schema
+            .number()
+            .int()
+            .positive()
+            .optional()
+            .describe("Optional maximum number of goal turns"),
+        },
+        async execute(args, context) {
+          const current = await store.get(context.sessionID);
+          if (current && current.status !== "complete") {
+            return `Goal creation rejected: an unfinished goal is already ${current.status}. Continue it, or ask the user to clear it or explicitly replace it with /goal.`;
+          }
+
+          const tokenBudget = args.token_budget ?? options.defaultTokenBudget;
+          const maxTurns = args.max_turns ?? options.defaultMaxTurns;
+          const goal = createGoalState({
+            sessionID: context.sessionID,
+            directory: input.directory,
+            objective: args.objective,
+            startedMessageID: context.messageID,
+            ...(tokenBudget ? { tokenBudget } : {}),
+            ...(maxTurns ? { maxTurns } : {}),
+          });
+          await store.set(goal);
+          await showToast(
+            input.client,
+            `Goal created by agent: ${goal.objective.slice(0, 120)}`,
+            "info",
+          );
+          return `Goal created. Continue working toward it until it is complete or genuinely blocked.\n${statusPayload(goal)}`;
+        },
+      }),
       get_goal: tool({
         description:
           "Get the current persistent goal for this session, including status, budgets, usage, and the latest evaluator reason.",

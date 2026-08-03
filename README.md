@@ -71,6 +71,11 @@ Control the current session goal with:
 An explicit budget is optional. Without `--tokens` or `--max-turns`, the goal
 remains active until it completes, is paused, is cleared, or is marked blocked.
 
+When a user asks for persistent goal tracking in ordinary language, an agent can
+start it through the `create_goal` model tool without requiring a `/goal`
+command. The tool accepts optional token and turn budgets, but it cannot replace
+an unfinished goal. The user must explicitly clear or replace unfinished work.
+
 ## TUI sidebar
 
 When the TUI entrypoint is enabled, the current session's goal appears in a
@@ -102,8 +107,10 @@ has no goal.
    `session.promptAsync()`, starting the next turn.
 6. A positive decision marks the durable goal complete and stops continuation.
 
-The plugin also exposes two model tools:
+The plugin also exposes three model tools:
 
+- `create_goal` starts a persistent goal when the user explicitly requests one.
+  It refuses to overwrite any unfinished goal in the session.
 - `get_goal` returns the current state and remaining budget.
 - `update_goal` records a completion claim for independent evaluation, or marks
   a genuinely repeated blocker after at least three goal turns.
