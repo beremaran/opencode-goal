@@ -7,12 +7,19 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-03
+
 ### Added
 
 - OpenCode TUI sidebar entrypoint showing per-session goal status, objective,
   elapsed time, usage, evaluator reason, and token or turn budget progress.
 - Agent-callable `create_goal` tool with optional budgets, unfinished-goal
   overwrite protection, and current-turn evaluation support.
+
+### Fixed
+
+- Removed a timing assumption from the evaluator-failure test that could make
+  the Node.js 22 CI job ignore its synthetic post-goal messages.
 
 ## [0.1.0] - 2026-07-31
 
@@ -28,5 +35,6 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Provider failure and user interruption safeguards.
 - Strict type checking and automated behavioral tests.
 
-[Unreleased]: https://github.com/beremaran/opencode-goal/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/beremaran/opencode-goal/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/beremaran/opencode-goal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/beremaran/opencode-goal/releases/tag/v0.1.0

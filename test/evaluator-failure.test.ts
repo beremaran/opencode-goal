@@ -12,33 +12,7 @@ test("pauses rather than looping when the completion evaluator cannot start", as
   );
   context.after(() => rm(stateDirectory, { recursive: true, force: true }));
 
-  const created = Date.now() + 10;
-  const messages: TranscriptMessage[] = [
-    {
-      info: {
-        id: "usr_failure",
-        role: "user",
-        time: { created },
-        agent: "build",
-        model: { providerID: "test", modelID: "worker" },
-      },
-      parts: [{ type: "text", text: "finish the task" }],
-    },
-    {
-      info: {
-        id: "asst_failure",
-        role: "assistant",
-        time: { created: created + 1 },
-        tokens: {
-          input: 10,
-          output: 5,
-          reasoning: 0,
-          cache: { read: 0, write: 0 },
-        },
-      },
-      parts: [{ type: "text", text: "Some work remains." }],
-    },
-  ];
+  let messages: TranscriptMessage[] = [];
   let continuationCount = 0;
   const client = {
     app: { log: async () => ({ data: true }) },
@@ -71,6 +45,33 @@ test("pauses rather than looping when the completion evaluator cannot start", as
     },
     { parts: [{ type: "text", text: "" }] } as never,
   );
+  const created = Date.now() + 10;
+  messages = [
+    {
+      info: {
+        id: "usr_failure",
+        role: "user",
+        time: { created },
+        agent: "build",
+        model: { providerID: "test", modelID: "worker" },
+      },
+      parts: [{ type: "text", text: "finish the task" }],
+    },
+    {
+      info: {
+        id: "asst_failure",
+        role: "assistant",
+        time: { created: created + 1 },
+        tokens: {
+          input: 10,
+          output: 5,
+          reasoning: 0,
+          cache: { read: 0, write: 0 },
+        },
+      },
+      parts: [{ type: "text", text: "Some work remains." }],
+    },
+  ];
   await hooks.event?.({
     event: { type: "session.idle", properties: { sessionID: "ses_failure" } },
   } as never);
