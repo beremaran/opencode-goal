@@ -20,7 +20,17 @@ Requires OpenCode 1.18 or newer.
 
 ## Install
 
-Add the npm package to your `opencode.json`:
+Install both the server workflow and TUI integration with OpenCode's plugin
+installer:
+
+```bash
+opencode plugin @beremaran/opencode-goal
+```
+
+The installer detects the package's server and TUI entrypoints and updates both
+configuration files. Restart OpenCode after installation.
+
+For manual installation, add the package to `opencode.json`:
 
 ```json
 {
@@ -29,7 +39,16 @@ Add the npm package to your `opencode.json`:
 }
 ```
 
-Restart OpenCode. OpenCode installs npm plugins automatically when it starts.
+Then add the same package to `tui.json` to enable the sidebar:
+
+```json
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": ["@beremaran/opencode-goal"]
+}
+```
+
+OpenCode installs npm plugins automatically when it starts.
 
 ## Usage
 
@@ -51,6 +70,20 @@ Control the current session goal with:
 
 An explicit budget is optional. Without `--tokens` or `--max-turns`, the goal
 remains active until it completes, is paused, is cleared, or is marked blocked.
+
+## TUI sidebar
+
+When the TUI entrypoint is enabled, the current session's goal appears in a
+collapsible **Goal** section beside OpenCode's Todo and Files sections. It shows:
+
+- Status and objective.
+- Elapsed time, turns, and tokens used.
+- The latest independent evaluator reason.
+- Token and turn budget bars when those limits are configured.
+
+Budget bars show consumption of the configured limits, not an estimated
+percentage of semantic goal completion. The section disappears when the session
+has no goal.
 
 ## How it works
 
@@ -105,6 +138,10 @@ Plugin options can be supplied in an OpenCode plugin entry:
 All options are optional. By default, budgets are unbounded and evaluator
 sessions are deleted after use.
 
+If manual server and TUI configuration uses a custom `stateDirectory`, provide
+the same value in both `opencode.json` and `tui.json` so the sidebar reads the
+server's state.
+
 State is stored outside the repository under:
 
 ```text
@@ -124,8 +161,8 @@ When `XDG_STATE_HOME` is unset, the root is
 - This plugin cannot bypass provider rate, usage, trust, or permission limits.
 - A provider or model failure pauses the goal instead of risking an unverified
   runaway loop. The goal remains persisted and can be resumed.
-- There is no custom footer or sidebar indicator in this server-only version;
-  use `/goal` for status.
+- The sidebar entrypoint is specific to OpenCode's terminal TUI. Other OpenCode
+  clients can use `/goal` for status.
 
 ## Local development
 

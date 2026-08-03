@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- OpenCode TUI sidebar entrypoint showing per-session goal status, objective,
+  elapsed time, usage, evaluator reason, and token or turn budget progress.
+
 ## [0.1.0] - 2026-07-31
 
 ### Added
