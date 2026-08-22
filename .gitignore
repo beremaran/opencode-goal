@@ -96,6 +96,9 @@ fabric.properties
 !.idea/codeStyles
 !.idea/runConfigurations
 
+# Ignore the entire IDE settings folder.
+.idea/
+
 ### Linux ###
 *~
 
