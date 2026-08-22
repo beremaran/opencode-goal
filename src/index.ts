@@ -1,4 +1,10 @@
-import { tool, type Plugin, type PluginInput } from "@opencode-ai/plugin";
+import { z } from "zod";
+import type {
+  Plugin,
+  PluginInput,
+  ToolContext,
+  ToolResult,
+} from "@opencode-ai/plugin";
 import { evaluateGoal } from "./evaluator.js";
 import { createGoalState, goalSummary, remainingTokens } from "./lifecycle.js";
 import { parseGoalCommand, resolveOptions } from "./options.js";
@@ -28,6 +34,22 @@ import type {
 } from "./types.js";
 
 const SERVICE = "opencode-goal";
+
+// Keep the V1 implementation free of a runtime import from
+// @opencode-ai/plugin. OpenCode 2 resolves that package to its V2 runtime,
+// which intentionally has a different root export. The V1 helper is a thin
+// structural equivalent of the package's tool() helper.
+const tool = Object.assign(
+  <Args extends z.ZodRawShape>(input: {
+    description: string;
+    args: Args;
+    execute(
+      args: z.infer<z.ZodObject<Args>>,
+      context: ToolContext,
+    ): Promise<ToolResult>;
+  }) => input,
+  { schema: z },
+);
 
 function replaceTextPart(
   parts: Array<{ type: string; text?: string }>,
@@ -338,7 +360,7 @@ async function handleIdle(input: {
   }
 }
 
-export const GoalPlugin: Plugin = async (input, rawOptions) => {
+const v1GoalPlugin: Plugin = async (input, rawOptions) => {
   const options = resolveOptions(rawOptions);
   const root = options.stateDirectory ?? defaultStateRoot();
   const stateDirectory = scopedStateDirectory(
@@ -626,4 +648,21 @@ export const GoalPlugin: Plugin = async (input, rawOptions) => {
   };
 };
 
-export default GoalPlugin;
+// The package root follows OpenCode 2's object-shaped plugin contract. The
+// separate ./server export keeps the callable V1 entrypoint available to the
+// OpenCode 1 loader without importing either runtime API until it is used.
+export const GoalPlugin = Object.assign(v1GoalPlugin, {
+  id: SERVICE,
+  setup: async (context: unknown) => {
+    const { setupV2 } = await import("./v2.js");
+    return setupV2(context);
+  },
+});
+
+const plugin = {
+  id: SERVICE,
+  server: v1GoalPlugin,
+  setup: GoalPlugin.setup,
+};
+
+export default plugin;

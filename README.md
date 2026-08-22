@@ -16,7 +16,7 @@ The plugin combines:
   model tools, and idle continuation.
 - Optional token and turn budgets to cap unattended runs.
 
-Requires OpenCode 1.18 or newer.
+Requires OpenCode 1.18 or newer, or the OpenCode 2 beta.
 
 ## Install
 
@@ -29,6 +29,41 @@ opencode plugin @beremaran/opencode-goal
 
 The installer detects the package's server and TUI entrypoints and updates both
 configuration files. Restart OpenCode after installation.
+
+### OpenCode 2
+
+OpenCode 2 uses the native `plugins` configuration field and installs plugins
+with `opencode2`:
+
+```bash
+opencode2 plugin add @beremaran/opencode-goal
+```
+
+The package's default entrypoint is dual-runtime: it exposes the OpenCode 1
+`server` function and OpenCode 2's `id`/`setup` API. The package also exposes an
+explicit V2 entrypoint for beta builds that require a separate object module:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": ["@beremaran/opencode-goal/v2"]
+}
+```
+
+OpenCode 2's terminal client loads the sidebar and `/goal` slash command from
+the package's TUI entrypoint. Add that entrypoint to
+`~/.config/opencode/cli.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": ["@beremaran/opencode-goal/tui"]
+}
+```
+
+For V2 plugin options, use `{ "package": "...", "options": { ... } }`
+entries in `plugins`. The terminal client's configuration is stored in
+`~/.config/opencode/cli.json`, rather than `tui.json`.
 
 For manual installation, add the package to `opencode.json`:
 
@@ -119,6 +154,14 @@ Active goal context is re-injected into system prompts and compaction context.
 Interrupting an OpenCode response pauses the goal so pressing Escape does not
 immediately restart it.
 
+On OpenCode 2, the same tools are registered through the V2 tool API. Goal
+transcripts are reconstructed from the V2 event stream, and the active goal is
+injected through the V2 session context hook.
+
+The current OpenCode 2 beta does not expose evaluator-session deletion through
+the plugin session API, so V2 evaluator sessions may remain in the session list
+even when `deleteEvaluatorSessions` is enabled.
+
 ## Configuration
 
 Plugin options can be supplied in an OpenCode plugin entry:
@@ -146,8 +189,9 @@ All options are optional. By default, budgets are unbounded and evaluator
 sessions are deleted after use.
 
 If manual server and TUI configuration uses a custom `stateDirectory`, provide
-the same value in both `opencode.json` and `tui.json` so the sidebar reads the
-server's state.
+the same value in both OpenCode 1 config files (`opencode.json` and `tui.json`)
+or in the matching OpenCode 2 server and terminal-client plugin entries so the
+sidebar reads the server's state.
 
 State is stored outside the repository under:
 
@@ -160,8 +204,11 @@ When `XDG_STATE_HOME` is unset, the root is
 
 ## Limitations
 
-- The stable server plugin API can register a prompt-backed slash command, so
-  status and control commands each create a normal OpenCode turn.
+- The stable OpenCode 1 server plugin API can register a prompt-backed slash
+  command, so status and control commands each create a normal OpenCode turn.
+- OpenCode 2 provides the slash command from its terminal-client keymap and
+  uses the V2 server tools for agent-created goals. Other OpenCode 2 clients
+  can use the model tools directly.
 - Evaluators can judge only transcript evidence. If work happened but the
   agent did not surface it, the evaluator should ask for stronger evidence and
   continue.

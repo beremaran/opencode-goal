@@ -50,6 +50,9 @@ export function parseGoalState(value: unknown): GoalState | undefined {
   ) {
     return undefined;
   }
+  if (value.transcript !== undefined && !Array.isArray(value.transcript)) {
+    return undefined;
+  }
 
   return value as GoalState;
 }

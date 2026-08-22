@@ -18,7 +18,7 @@
   "homepage": "https://github.com/beremaran/opencode-goal#readme",
   "funding": "https://github.com/sponsors/beremaran",
   "sideEffects": false,
-  "main": "./dist/index.js",
+  "main": "./dist/server.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
@@ -26,8 +26,12 @@
       "import": "./dist/index.js"
     },
     "./server": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./v2": {
+      "types": "./dist/v2.d.ts",
+      "import": "./dist/v2.js"
     },
     "./tui": {
       "types": "./dist/tui.d.ts",
@@ -67,7 +71,8 @@
     "developer-tools"
   ],
   "dependencies": {
-    "@opencode-ai/plugin": "^1.18.10"
+    "@opencode-ai/plugin": "^1.18.10",
+    "zod": "^4.1.8"
   },
   "peerDependencies": {
     "@opentui/core": ">=0.4.5",

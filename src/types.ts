@@ -33,6 +33,8 @@ export type GoalState = {
   lastEvaluatedMessageID?: string;
   lastReason?: string;
   completionClaim?: CompletionClaim;
+  /** V2 event-backed transcript retained when the V2 client cannot list messages. */
+  transcript?: TranscriptMessage[];
 };
 
 export type EvaluationDecision = {
