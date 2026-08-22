@@ -1,7 +1,5 @@
 # OpenCode Goal
 
-> **⚠️ Archived** — This repository is archived. Its functionality (persistent goals) has been consolidated into the [opencode-beanie-plugin](https://github.com/beremaran/opencode-beanie-plugin) (feature: `goal`). Please use that instead.
-
 [![CI](https://github.com/beremaran/opencode-goal/actions/workflows/ci.yml/badge.svg)](https://github.com/beremaran/opencode-goal/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@beremaran/opencode-goal)](https://www.npmjs.com/package/@beremaran/opencode-goal)
 [![license](https://img.shields.io/npm/l/@beremaran/opencode-goal)](LICENSE)
