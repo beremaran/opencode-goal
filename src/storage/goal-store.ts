@@ -16,12 +16,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function optionalPositiveInteger(value: unknown): value is number | undefined {
-    return (
-        value === undefined || (Number.isSafeInteger(value) && Number(value) > 0)
-    );
-}
-
 export function parseGoalState(value: unknown): GoalState | undefined {
     if (!isRecord(value)) return undefined;
     if (value.version !== 1) return undefined;
@@ -44,8 +38,6 @@ export function parseGoalState(value: unknown): GoalState | undefined {
     if (!Number.isSafeInteger(value.tokensUsed) || Number(value.tokensUsed) < 0) {
         return undefined;
     }
-    if (!optionalPositiveInteger(value.tokenBudget)) return undefined;
-    if (!optionalPositiveInteger(value.maxTurns)) return undefined;
     if (
         value.startedMessageID !== undefined &&
         (typeof value.startedMessageID !== "string" || !value.startedMessageID)
@@ -56,7 +48,40 @@ export function parseGoalState(value: unknown): GoalState | undefined {
         return undefined;
     }
 
-    return value as GoalState;
+    return {
+        version: 1,
+        goalId: value.goalId,
+        sessionID: value.sessionID,
+        directory: value.directory,
+        objective: value.objective,
+        status: value.status as GoalState["status"],
+        createdAt: value.createdAt as number,
+        updatedAt: value.updatedAt as number,
+        ...(typeof value.completedAt === "number"
+            ? {completedAt: value.completedAt}
+            : {}),
+        turns: value.turns as number,
+        tokensUsed: value.tokensUsed as number,
+        ...(typeof value.startedMessageID === "string"
+            ? {startedMessageID: value.startedMessageID}
+            : {}),
+        ...(typeof value.lastEvaluatedMessageID === "string"
+            ? {lastEvaluatedMessageID: value.lastEvaluatedMessageID}
+            : {}),
+        ...(typeof value.lastReason === "string"
+            ? {lastReason: value.lastReason}
+            : {}),
+        ...(isRecord(value.completionClaim)
+            ? {
+                completionClaim: value.completionClaim as NonNullable<
+                    GoalState["completionClaim"]
+                >,
+            }
+            : {}),
+        ...(Array.isArray(value.transcript)
+            ? {transcript: value.transcript as NonNullable<GoalState["transcript"]>}
+            : {}),
+    };
 }
 
 function safeSegment(value: string): string {

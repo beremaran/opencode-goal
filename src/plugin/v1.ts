@@ -1,12 +1,11 @@
 import {z} from "zod";
 import type {Plugin, PluginInput, ToolContext, ToolResult,} from "@opencode-ai/plugin";
 import {evaluateGoal} from "./evaluator.js";
-import {createGoalState, remainingTokens} from "../core/goal.js";
+import {createGoalState} from "../core/goal.js";
 import {parseGoalCommand, resolveOptions} from "../core/options.js";
 import {
     actionPrompt,
     activeGoalContext,
-    budgetLimitPrompt,
     continuationPrompt,
     helpPrompt,
     startingPrompt,
@@ -51,10 +50,7 @@ function asTranscriptMessages(value: unknown): TranscriptMessage[] {
 function statusPayload(goal: GoalState | undefined): string {
     if (!goal) return JSON.stringify({goal: null});
     return JSON.stringify(
-        {
-            goal,
-            remainingTokens: remainingTokens(goal) ?? null,
-        },
+        {goal},
         null,
         2,
     );
@@ -263,57 +259,6 @@ async function handleIdle(input: {
             return;
         }
 
-        if (
-            current.tokenBudget !== undefined &&
-            current.tokensUsed >= current.tokenBudget
-        ) {
-            const limited: GoalState = {
-                ...current,
-                status: "budget_limited",
-                updatedAt: Date.now(),
-                lastReason: `Token budget reached (${current.tokensUsed.toLocaleString()} / ${current.tokenBudget.toLocaleString()}). Last evaluation: ${decision.reason}`,
-            };
-            delete limited.completionClaim;
-            await input.store.set(limited);
-            await showToast(
-                input.client,
-                "Goal stopped at its token budget",
-                "warning",
-            );
-            await continueParent(
-                input.client,
-                limited,
-                messages,
-                budgetLimitPrompt(limited),
-                input.log,
-            );
-            return;
-        }
-
-        if (current.maxTurns !== undefined && current.turns >= current.maxTurns) {
-            const limited: GoalState = {
-                ...current,
-                status: "turn_limited",
-                updatedAt: Date.now(),
-                lastReason: `Turn budget reached (${current.turns} / ${current.maxTurns}). Last evaluation: ${decision.reason}`,
-            };
-            delete limited.completionClaim;
-            await input.store.set(limited);
-            await showToast(
-                input.client,
-                "Goal stopped at its turn budget",
-                "warning",
-            );
-            await continueParent(
-                input.client,
-                limited,
-                messages,
-                budgetLimitPrompt(limited),
-                input.log,
-            );
-            return;
-        }
-
         const continuing: GoalState = {
             ...current,
             updatedAt: Date.now(),
@@ -367,7 +312,7 @@ const v1GoalPlugin: Plugin = async (input, rawOptions) => {
 
         "command.execute.before": async (command, output) => {
             if (command.command !== "goal") return;
-            const parsed = parseGoalCommand(command.arguments, options);
+            const parsed = parseGoalCommand(command.arguments);
 
             if (parsed.action === "status") {
                 controlTurns.add(command.sessionID);
@@ -454,8 +399,6 @@ const v1GoalPlugin: Plugin = async (input, rawOptions) => {
                 sessionID: command.sessionID,
                 directory: input.directory,
                 objective: parsed.objective,
-                ...(parsed.tokenBudget ? {tokenBudget: parsed.tokenBudget} : {}),
-                ...(parsed.maxTurns ? {maxTurns: parsed.maxTurns} : {}),
             });
             await store.set(goal);
             replaceTextPart(output.parts, startingPrompt(goal));
@@ -486,20 +429,6 @@ const v1GoalPlugin: Plugin = async (input, rawOptions) => {
                         .describe(
                             "The concrete condition that will make the goal complete",
                         ),
-                    token_budget: tool.schema
-                        .number()
-                        .int()
-                        .positive()
-                        .optional()
-                        .describe(
-                            "Optional token budget; omit unless the user explicitly requested one",
-                        ),
-                    max_turns: tool.schema
-                        .number()
-                        .int()
-                        .positive()
-                        .optional()
-                        .describe("Optional maximum number of goal turns"),
                 },
                 async execute(args, context) {
                     const current = await store.get(context.sessionID);
@@ -507,15 +436,11 @@ const v1GoalPlugin: Plugin = async (input, rawOptions) => {
                         return `Goal creation rejected: an unfinished goal is already ${current.status}. Continue it, or ask the user to clear it or explicitly replace it with /goal.`;
                     }
 
-                    const tokenBudget = args.token_budget ?? options.defaultTokenBudget;
-                    const maxTurns = args.max_turns ?? options.defaultMaxTurns;
                     const goal = createGoalState({
                         sessionID: context.sessionID,
                         directory: input.directory,
                         objective: args.objective,
                         startedMessageID: context.messageID,
-                        ...(tokenBudget ? {tokenBudget} : {}),
-                        ...(maxTurns ? {maxTurns} : {}),
                     });
                     await store.set(goal);
                     await showToast(
@@ -528,7 +453,7 @@ const v1GoalPlugin: Plugin = async (input, rawOptions) => {
             }),
             get_goal: tool({
                 description:
-                    "Get the current persistent goal for this session, including status, budgets, usage, and the latest evaluator reason.",
+                    "Get the current persistent goal for this session, including status, usage, and the latest evaluator reason.",
                 args: {},
                 async execute(_args, context) {
                     return statusPayload(await store.get(context.sessionID));

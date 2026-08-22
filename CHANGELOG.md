@@ -7,6 +7,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Removed
+
+- Run limits from goal state, commands, tools, prompts, and the TUI.
+
 ## [0.3.0] - 2026-08-22
 
 ### Added
@@ -20,8 +24,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ### Added
 
 - OpenCode TUI sidebar entrypoint showing per-session goal status, objective,
-  elapsed time, usage, evaluator reason, and token or turn budget progress.
-- Agent-callable `create_goal` tool with optional budgets, unfinished-goal
+  elapsed time, usage, and evaluator reason.
+- Agent-callable `create_goal` tool with unfinished-goal
   overwrite protection, and current-turn evaluation support.
 
 ### Fixed
@@ -37,7 +41,6 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   controls.
 - Independent completion evaluation in a temporary child session.
 - Automatic continuation after incomplete evaluations.
-- Optional token and turn budgets.
 - `get_goal` and `update_goal` tools for model-visible state and claims.
 - Durable state across context compaction and OpenCode restarts.
 - Provider failure and user interruption safeguards.

@@ -1,10 +1,10 @@
 /** @jsxImportSource @opentui/solid */
 import type {TuiPlugin, TuiPluginApi, TuiPluginModule, TuiTheme,} from "@opencode-ai/plugin/tui";
-import {createEffect, createMemo, createSignal, For, onCleanup, Show,} from "solid-js";
+import {createEffect, createSignal, onCleanup, Show,} from "solid-js";
 import {createGoalState, formatDuration} from "../core/goal.js";
 import {parseGoalCommand, resolveOptions} from "../core/options.js";
 import {defaultStateRoot, FileGoalStore, scopedStateDirectory,} from "../storage/goal-store.js";
-import {compactCount, goalElapsedMilliseconds, goalLimitProgress, goalStatusLabel, snippet,} from "./format.js";
+import {compactCount, goalElapsedMilliseconds, goalStatusLabel, snippet,} from "./format.js";
 import {loadSessionGoal} from "./state.js";
 import {actionPrompt, continuationPrompt, helpPrompt, startingPrompt, statusPrompt,} from "../core/prompts.js";
 import type {GoalState, GoalStatus, ResolvedGoalPluginOptions,} from "../core/types.js";
@@ -21,9 +21,6 @@ function statusColor(theme: TuiTheme["current"], status: GoalStatus): TuiColor {
         case "complete":
             return theme.success;
         case "paused":
-        case "budget_limited":
-        case "turn_limited":
-            return theme.warning;
         case "blocked":
             return theme.error;
     }
@@ -91,11 +88,6 @@ function GoalSidebar(props: {
         for (const dispose of unsubscribe) dispose();
     });
 
-    const limits = createMemo(() => {
-        const current = goal();
-        return current ? goalLimitProgress(current) : [];
-    });
-
     return (
         <Show when={goal()}>
             {(current) => (
@@ -119,24 +111,10 @@ function GoalSidebar(props: {
                             {snippet(current().objective, 160)}
                         </text>
 
-                        <Show
-                            when={limits().length > 0}
-                            fallback={
-                                <text fg={props.api.theme.current.textMuted}>
-                                    {current().turns.toLocaleString()} turns ·{" "}
-                                    {compactCount(current().tokensUsed)} tokens
-                                </text>
-                            }
-                        >
-                            <For each={limits()}>
-                                {(limit) => (
-                                    <text fg={props.api.theme.current.textMuted}>
-                                        {limit.label} [{limit.bar}] {compactCount(limit.used)} /{" "}
-                                        {compactCount(limit.total)} ({limit.percent}%)
-                                    </text>
-                                )}
-                            </For>
-                        </Show>
+                        <text fg={props.api.theme.current.textMuted}>
+                            {current().turns.toLocaleString()} turns ·{" "}
+                            {compactCount(current().tokensUsed)} tokens
+                        </text>
 
                         <text fg={props.api.theme.current.textMuted}>
                             {formatDuration(goalElapsedMilliseconds(current(), now()))}{" "}
@@ -249,11 +227,6 @@ function V2GoalSidebar(props: {
         unsubscribe();
     });
 
-    const limits = createMemo(() => {
-        const current = goal();
-        return current ? goalLimitProgress(current) : [];
-    });
-
     return (
         <Show when={goal()}>
             {(current) => (
@@ -262,24 +235,10 @@ function V2GoalSidebar(props: {
                         <b>Goal</b> · {goalStatusLabel(current().status)}
                     </text>
                     <text>{snippet(current().objective, 160)}</text>
-                    <Show
-                        when={limits().length > 0}
-                        fallback={
-                            <text>
-                                {current().turns.toLocaleString()} turns ·{" "}
-                                {compactCount(current().tokensUsed)} tokens
-                            </text>
-                        }
-                    >
-                        <For each={limits()}>
-                            {(limit) => (
-                                <text>
-                                    {limit.label} [{limit.bar}] {compactCount(limit.used)} /{" "}
-                                    {compactCount(limit.total)} ({limit.percent}%)
-                                </text>
-                            )}
-                        </For>
-                    </Show>
+                    <text>
+                        {current().turns.toLocaleString()} turns ·{" "}
+                        {compactCount(current().tokensUsed)} tokens
+                    </text>
                     <text>
                         {formatDuration(goalElapsedMilliseconds(current(), now()))} elapsed
                     </text>
@@ -307,7 +266,7 @@ async function runV2GoalCommand(
         scopedStateDirectory(root, session.projectID, session.location.directory),
     );
     const raw = (rawInput ?? "").replace(/^\/goal\b/i, "").trim();
-    const parsed = parseGoalCommand(raw, options);
+    const parsed = parseGoalCommand(raw);
     let prompt: string;
 
     if (parsed.action === "status") {
@@ -356,8 +315,6 @@ async function runV2GoalCommand(
                 sessionID: route.sessionID,
                 directory: session.location.directory,
                 objective: parsed.objective,
-                ...(parsed.tokenBudget ? {tokenBudget: parsed.tokenBudget} : {}),
-                ...(parsed.maxTurns ? {maxTurns: parsed.maxTurns} : {}),
             });
             await store.set(goal);
             prompt = startingPrompt(goal);

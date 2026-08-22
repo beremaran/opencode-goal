@@ -1,4 +1,4 @@
-import {goalSummary, remainingTokens} from "./goal.js";
+import {goalSummary} from "./goal.js";
 import type {GoalState} from "./types.js";
 
 export function escapeXmlText(input: string): string {
@@ -8,20 +8,17 @@ export function escapeXmlText(input: string): string {
         .replaceAll(">", "&gt;");
 }
 
-function budgetContext(goal: GoalState): string {
+function progressContext(goal: GoalState): string {
     return [
         `turns_used=${goal.turns}`,
-        `max_turns=${goal.maxTurns ?? "unbounded"}`,
         `tokens_used=${goal.tokensUsed}`,
-        `token_budget=${goal.tokenBudget ?? "unbounded"}`,
-        `remaining_tokens=${remainingTokens(goal) ?? "unbounded"}`,
     ].join(" ");
 }
 
 export function activeGoalContext(goal: GoalState): string {
     return `<active-goal>
 <objective>${escapeXmlText(goal.objective)}</objective>
-<progress>${budgetContext(goal)}</progress>
+<progress>${progressContext(goal)}</progress>
 </active-goal>
 
 Keep working toward this objective while it is active. Do not claim completion without concrete evidence. Use update_goal with status "complete" when the objective is genuinely achieved, or "blocked" only after the same external blocker has recurred for at least three goal turns.`;
@@ -30,7 +27,7 @@ Keep working toward this objective while it is active. Do not claim completion w
 export function startingPrompt(goal: GoalState): string {
     return `<goal>
 <objective>${escapeXmlText(goal.objective)}</objective>
-<progress>${budgetContext(goal)}</progress>
+<progress>${progressContext(goal)}</progress>
 </goal>
 
 Work toward this completion condition now. Continue making concrete progress until it is genuinely satisfied. Verify the result with the strongest practical evidence available, and surface that evidence in your response so an independent evaluator can judge it.
@@ -41,22 +38,13 @@ Do not stop merely because the work is difficult, lengthy, or would benefit from
 export function continuationPrompt(goal: GoalState): string {
     return `<goal-continuation>
 <objective>${escapeXmlText(goal.objective)}</objective>
-<progress>${budgetContext(goal)}</progress>
+<progress>${progressContext(goal)}</progress>
 <evaluation>${escapeXmlText(goal.lastReason ?? "The completion condition is not yet established.")}</evaluation>
 </goal-continuation>
 
 The goal remains active. Continue from the current state and address the evaluator's reason. Make concrete progress, verify it, and surface the evidence. Do not simply restate the plan or ask whether to continue.
 
 If the objective is genuinely complete, call update_goal with status "complete" and a concise evidence-based reason. Mark it "blocked" only after the same external blocker has prevented progress for at least three goal turns.`;
-}
-
-export function budgetLimitPrompt(goal: GoalState): string {
-    return `<goal-budget-reached>
-<objective>${escapeXmlText(goal.objective)}</objective>
-<progress>${budgetContext(goal)}</progress>
-</goal-budget-reached>
-
-The goal's configured budget has been reached. Do not start additional work. Give the user a concise handoff describing what is complete, what remains, the verification performed, and the exact next step.`;
 }
 
 export function statusPrompt(goal: GoalState | undefined): string {
@@ -72,14 +60,12 @@ export function helpPrompt(): string {
     return `Explain this plugin's /goal syntax concisely:
 
 /goal <completion condition>
-/goal --tokens 100k <completion condition>
-/goal --max-turns 20 <completion condition>
 /goal
 /goal pause
 /goal resume
 /goal clear
 
-Mention that active goals are independently evaluated after each turn and automatically continue until complete, paused, cleared, blocked, or budget-limited.`;
+Mention that active goals are independently evaluated after each turn and automatically continue until complete, paused, cleared, or blocked.`;
 }
 
 export function actionPrompt(message: string): string {

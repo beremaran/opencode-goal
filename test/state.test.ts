@@ -14,7 +14,6 @@ test("persists, loads, and clears a goal atomically", async (context) => {
         sessionID: "ses_123",
         directory: "/workspace",
         objective: "tests pass",
-        tokenBudget: 5_000,
         startedMessageID: "asst_goal",
         now: 10,
         goalId: "goal_123",

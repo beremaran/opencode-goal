@@ -5,8 +5,6 @@ export type CreateGoalInput = {
     sessionID: string;
     directory: string;
     objective: string;
-    tokenBudget?: number;
-    maxTurns?: number;
     startedMessageID?: string;
     now?: number;
     goalId?: string;
@@ -26,15 +24,8 @@ export function createGoalState(input: CreateGoalInput): GoalState {
         turns: 0,
         tokensUsed: 0,
     };
-    if (input.tokenBudget) state.tokenBudget = input.tokenBudget;
-    if (input.maxTurns) state.maxTurns = input.maxTurns;
     if (input.startedMessageID) state.startedMessageID = input.startedMessageID;
     return state;
-}
-
-export function remainingTokens(goal: GoalState): number | undefined {
-    if (goal.tokenBudget === undefined) return undefined;
-    return Math.max(goal.tokenBudget - goal.tokensUsed, 0);
 }
 
 export function formatDuration(milliseconds: number): string {
@@ -49,21 +40,13 @@ export function formatDuration(milliseconds: number): string {
 }
 
 export function goalSummary(goal: GoalState, now = Date.now()): string {
-    const budget =
-        goal.tokenBudget === undefined
-            ? `${goal.tokensUsed.toLocaleString()} tokens`
-            : `${goal.tokensUsed.toLocaleString()} / ${goal.tokenBudget.toLocaleString()} tokens`;
-    const turns =
-        goal.maxTurns === undefined
-            ? `${goal.turns} turns`
-            : `${goal.turns} / ${goal.maxTurns} turns`;
     const reason = goal.lastReason ? `\nLast evaluation: ${goal.lastReason}` : "";
 
     return (
         [
             `Goal status: ${goal.status}`,
             `Objective: ${goal.objective}`,
-            `Progress: ${turns}; ${budget}; ${formatDuration(now - goal.createdAt)} elapsed`,
+            `Progress: ${goal.turns} turns; ${goal.tokensUsed.toLocaleString()} tokens; ${formatDuration(now - goal.createdAt)} elapsed`,
         ].join("\n") + reason
     );
 }

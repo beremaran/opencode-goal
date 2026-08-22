@@ -3,8 +3,6 @@ export const GOAL_STATUSES = [
     "paused",
     "complete",
     "blocked",
-    "budget_limited",
-    "turn_limited",
 ] as const;
 
 export type GoalStatus = (typeof GOAL_STATUSES)[number];
@@ -26,8 +24,6 @@ export type GoalState = {
     completedAt?: number;
     turns: number;
     tokensUsed: number;
-    tokenBudget?: number;
-    maxTurns?: number;
     /** Message that created the goal when it was started by a model tool. */
     startedMessageID?: string;
     lastEvaluatedMessageID?: string;
@@ -55,10 +51,6 @@ export type GoalPluginOptions = {
     stateDirectory?: string;
     /** Maximum transcript characters sent to the evaluator. */
     maxTranscriptChars?: number;
-    /** Default token budget for new goals. Undefined means unbounded. */
-    defaultTokenBudget?: number;
-    /** Default turn budget for new goals. Undefined means unbounded. */
-    defaultMaxTurns?: number;
     /** Delay before an automatic continuation, allowing user steering to win. */
     continuationDelayMs?: number;
     /** Delete temporary evaluator sessions after each decision. */
@@ -70,8 +62,6 @@ export type ResolvedGoalPluginOptions = {
     evaluatorAgent?: string;
     stateDirectory?: string;
     maxTranscriptChars: number;
-    defaultTokenBudget?: number;
-    defaultMaxTurns?: number;
     continuationDelayMs: number;
     deleteEvaluatorSessions: boolean;
 };
@@ -85,8 +75,6 @@ export type GoalCommand =
     | {
     action: "set";
     objective: string;
-    tokenBudget?: number;
-    maxTurns?: number;
 }
     | { action: "invalid"; message: string };
 

@@ -14,7 +14,6 @@ The plugin combines:
 - Claude Code-style completion evaluation after every turn.
 - Codex-style session persistence, token accounting, pause/resume controls,
   model tools, and idle continuation.
-- Optional token and turn budgets to cap unattended runs.
 
 Requires OpenCode 1.18 or newer, or the OpenCode 2 beta.
 
@@ -89,8 +88,7 @@ OpenCode installs npm plugins automatically when it starts.
 
 ```text
 /goal all authentication tests pass and lint is clean
-/goal --tokens 100k migrate every call site and make the build pass
-/goal --max-turns 20 diagnose and fix the intermittent queue test
+/goal migrate every call site and make the build pass
 ```
 
 Control the current session goal with:
@@ -103,13 +101,13 @@ Control the current session goal with:
 /goal help     Show command syntax
 ```
 
-An explicit budget is optional. Without `--tokens` or `--max-turns`, the goal
-remains active until it completes, is paused, is cleared, or is marked blocked.
+The goal remains active until it completes, is paused, is cleared, or is marked
+blocked.
 
 When a user asks for persistent goal tracking in ordinary language, an agent can
 start it through the `create_goal` model tool without requiring a `/goal`
-command. The tool accepts optional token and turn budgets, but it cannot replace
-an unfinished goal. The user must explicitly clear or replace unfinished work.
+command, but it cannot replace an unfinished goal. The user must explicitly
+clear or replace unfinished work.
 
 ## TUI sidebar
 
@@ -119,11 +117,8 @@ collapsible **Goal** section beside OpenCode's Todo and Files sections. It shows
 - Status and objective.
 - Elapsed time, turns, and tokens used.
 - The latest independent evaluator reason.
-- Token and turn budget bars when those limits are configured.
 
-Budget bars show consumption of the configured limits, not an estimated
-percentage of semantic goal completion. The section disappears when the session
-has no goal.
+The section disappears when the session has no goal.
 
 ## How it works
 
@@ -146,7 +141,7 @@ The plugin also exposes three model tools:
 
 - `create_goal` starts a persistent goal when the user explicitly requests one.
   It refuses to overwrite any unfinished goal in the session.
-- `get_goal` returns the current state and remaining budget.
+- `get_goal` returns the current state and usage.
 - `update_goal` records a completion claim for independent evaluation, or marks
   a genuinely repeated blocker after at least three goal turns.
 
@@ -175,8 +170,6 @@ Plugin options can be supplied in an OpenCode plugin entry:
         "evaluatorModel": "anthropic/claude-haiku-4-5",
         "maxTranscriptChars": 48000,
         "continuationDelayMs": 250,
-        "defaultTokenBudget": 200000,
-        "defaultMaxTurns": 50,
         "deleteEvaluatorSessions": true,
         "stateDirectory": "/custom/state/root"
       }
@@ -185,8 +178,7 @@ Plugin options can be supplied in an OpenCode plugin entry:
 }
 ```
 
-All options are optional. By default, budgets are unbounded and evaluator
-sessions are deleted after use.
+All options are optional. Evaluator sessions are deleted after use by default.
 
 If manual server and TUI configuration uses a custom `stateDirectory`, provide
 the same value in both OpenCode 1 config files (`opencode.json` and `tui.json`)
@@ -249,5 +241,5 @@ The design follows OpenCode's documented
 [plugin hooks](https://opencode.ai/docs/plugins/) and
 [custom commands](https://opencode.ai/docs/commands/). Completion behavior is
 modeled on Claude Code's documented
-[`/goal` loop](https://code.claude.com/docs/en/goal), while persistence and
-optional token budgeting follow Codex's goal lifecycle.
+[`/goal` loop](https://code.claude.com/docs/en/goal), while persistence follows
+Codex's goal lifecycle.

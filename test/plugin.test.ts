@@ -241,14 +241,10 @@ test("lets an agent create a goal without replacing unfinished work", async (con
     const created = await hooks.tool?.create_goal?.execute(
         {
             objective: "the release is published",
-            token_budget: 8_000,
-            max_turns: 4,
         },
         {sessionID: "ses_agent", messageID: "asst_create"} as never,
     );
     assert.match(String(created), /Goal created/);
-    assert.match(String(created), /"tokenBudget": 8000/);
-    assert.match(String(created), /"maxTurns": 4/);
     assert.match(String(created), /"startedMessageID": "asst_create"/);
     assert.equal(toasts.length, 1);
 

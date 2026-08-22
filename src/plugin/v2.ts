@@ -1,7 +1,6 @@
-import {createGoalState, remainingTokens} from "../core/goal.js";
+import {createGoalState} from "../core/goal.js";
 import {
     activeGoalContext,
-    budgetLimitPrompt,
     continuationPrompt,
     EVALUATOR_SYSTEM_PROMPT,
     evaluatorPrompt,
@@ -364,7 +363,7 @@ function mergeMessages(
 function statusPayload(goal: GoalState | undefined): string {
     if (!goal) return JSON.stringify({goal: null});
     return JSON.stringify(
-        {goal, remainingTokens: remainingTokens(goal) ?? null},
+        {goal},
         null,
         2,
     );
@@ -547,35 +546,6 @@ async function handleIdle(
             return;
         }
 
-        if (
-            current.tokenBudget !== undefined &&
-            current.tokensUsed >= current.tokenBudget
-        ) {
-            const limited: GoalState = {
-                ...current,
-                status: "budget_limited",
-                updatedAt: Date.now(),
-                lastReason: `Token budget reached (${current.tokensUsed.toLocaleString()} / ${current.tokenBudget.toLocaleString()}). Last evaluation: ${decision.reason}`,
-            };
-            delete limited.completionClaim;
-            await store.set(limited);
-            await continueParent(context, limited, budgetLimitPrompt(limited));
-            return;
-        }
-
-        if (current.maxTurns !== undefined && current.turns >= current.maxTurns) {
-            const limited: GoalState = {
-                ...current,
-                status: "turn_limited",
-                updatedAt: Date.now(),
-                lastReason: `Turn budget reached (${current.turns} / ${current.maxTurns}). Last evaluation: ${decision.reason}`,
-            };
-            delete limited.completionClaim;
-            await store.set(limited);
-            await continueParent(context, limited, budgetLimitPrompt(limited));
-            return;
-        }
-
         const continuing: GoalState = {
             ...current,
             lastReason: decision.reason,
@@ -648,16 +618,6 @@ async function registerTools(
                         minLength: 1,
                         description: "The concrete condition that makes the goal complete",
                     },
-                    token_budget: {
-                        type: "integer",
-                        minimum: 1,
-                        description: "Optional token budget",
-                    },
-                    max_turns: {
-                        type: "integer",
-                        minimum: 1,
-                        description: "Optional maximum number of goal turns",
-                    },
                 },
                 ["objective"],
             ),
@@ -678,18 +638,12 @@ async function registerTools(
                 const objective = stringValue(input.objective)?.trim();
                 if (!objective)
                     return result("Goal creation rejected: objective is required.");
-                const tokenBudget =
-                    numberValue(input.token_budget) ?? options.defaultTokenBudget;
-                const maxTurns =
-                    numberValue(input.max_turns) ?? options.defaultMaxTurns;
                 const messageID = toolContext.messageID;
                 const goal = createGoalState({
                     sessionID: toolContext.sessionID,
                     directory: session.location.directory,
                     objective,
                     startedMessageID: messageID,
-                    ...(tokenBudget ? {tokenBudget} : {}),
-                    ...(maxTurns ? {maxTurns} : {}),
                 });
                 const messages = liveMessages(trackers, toolContext.sessionID);
                 if (messages.length > 0) goal.transcript = messages;
@@ -703,7 +657,7 @@ async function registerTools(
         tools.add({
             name: "get_goal",
             description:
-                "Get the current persistent goal for this session, including status, budgets, usage, and the latest evaluator reason.",
+                "Get the current persistent goal for this session, including status, usage, and the latest evaluator reason.",
             input: inputSchema({}, []),
             options: {codemode: false},
             async execute(_input, toolContext) {

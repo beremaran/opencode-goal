@@ -120,6 +120,11 @@ test("registers and executes V2 goal tools", async (context) => {
     );
     assert.equal(typeof contextHook, "function");
 
+    const createDefinition = tools.get("create_goal") as {
+        input: {properties: Record<string, unknown>};
+    };
+    assert.deepEqual(Object.keys(createDefinition.input.properties), ["objective"]);
+
     const create = tools.get("create_goal") as {
         execute(
             input: Record<string, unknown>,
