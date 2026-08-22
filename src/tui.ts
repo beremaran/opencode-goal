@@ -1,1 +1,1 @@
-export { default } from "./ui/plugin.js";
+export {default} from "./ui/plugin.js";

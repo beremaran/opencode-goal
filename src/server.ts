@@ -1,4 +1,4 @@
-import { GoalPlugin } from "./plugin/v1.js";
+import {GoalPlugin} from "./plugin/v1.js";
 
-export { GoalPlugin };
+export {GoalPlugin};
 export default GoalPlugin;
