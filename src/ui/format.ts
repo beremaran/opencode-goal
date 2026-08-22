@@ -1,15 +1,4 @@
-import type {GoalState, GoalStatus} from "../core/types.js";
-
-const STATUS_LABELS: Record<GoalStatus, string> = {
-    active: "active",
-    paused: "paused",
-    complete: "complete",
-    blocked: "blocked",
-};
-
-export function goalStatusLabel(status: GoalStatus): string {
-    return STATUS_LABELS[status];
-}
+import type {GoalState} from "../core/types.js";
 
 export function compactCount(value: number): string {
     if (value < 1_000) return value.toLocaleString();

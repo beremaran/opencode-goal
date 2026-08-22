@@ -4,13 +4,10 @@ import {createGoalState} from "../src/core/goal.js";
 import {
     compactCount,
     goalElapsedMilliseconds,
-    goalStatusLabel,
     snippet,
 } from "../src/ui/format.js";
 
 test("formats goal status and compact counts", () => {
-    assert.equal(goalStatusLabel("active"), "active");
-    assert.equal(goalStatusLabel("blocked"), "blocked");
     assert.equal(compactCount(999), "999");
     assert.equal(compactCount(1_500), "1.5k");
     assert.equal(compactCount(2_000_000), "2m");

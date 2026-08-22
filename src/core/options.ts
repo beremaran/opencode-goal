@@ -57,7 +57,7 @@ export function parseGoalCommand(
     if (rest === "pause") return {action: "pause"};
     if (rest === "resume") return {action: "resume"};
 
-    while (rest.startsWith("--")) {
+    if (rest.startsWith("--")) {
         return {
             action: "invalid",
             message: `Unknown goal option: ${rest.split(/\s+/, 1)[0] ?? rest}`,

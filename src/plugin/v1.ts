@@ -1,7 +1,7 @@
 import {z} from "zod";
 import type {Plugin, PluginInput, ToolContext, ToolResult,} from "@opencode-ai/plugin";
 import {evaluateGoal} from "./evaluator.js";
-import {createGoalState} from "../core/goal.js";
+import {createGoalState, statusPayload} from "../core/goal.js";
 import {parseGoalCommand, resolveOptions} from "../core/options.js";
 import {
     actionPrompt,
@@ -45,15 +45,6 @@ function replaceTextPart(
 
 function asTranscriptMessages(value: unknown): TranscriptMessage[] {
     return Array.isArray(value) ? (value as TranscriptMessage[]) : [];
-}
-
-function statusPayload(goal: GoalState | undefined): string {
-    if (!goal) return JSON.stringify({goal: null});
-    return JSON.stringify(
-        {goal},
-        null,
-        2,
-    );
 }
 
 async function sleep(milliseconds: number): Promise<void> {

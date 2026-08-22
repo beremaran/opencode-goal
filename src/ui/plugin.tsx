@@ -4,7 +4,7 @@ import {createEffect, createSignal, onCleanup, Show,} from "solid-js";
 import {createGoalState, formatDuration} from "../core/goal.js";
 import {parseGoalCommand, resolveOptions} from "../core/options.js";
 import {defaultStateRoot, FileGoalStore, scopedStateDirectory,} from "../storage/goal-store.js";
-import {compactCount, goalElapsedMilliseconds, goalStatusLabel, snippet,} from "./format.js";
+import {compactCount, goalElapsedMilliseconds, snippet,} from "./format.js";
 import {loadSessionGoal} from "./state.js";
 import {actionPrompt, continuationPrompt, helpPrompt, startingPrompt, statusPrompt,} from "../core/prompts.js";
 import type {GoalState, GoalStatus, ResolvedGoalPluginOptions,} from "../core/types.js";
@@ -102,7 +102,7 @@ function GoalSidebar(props: {
                             <b>Goal</b>
                         </text>
                         <text fg={statusColor(props.api.theme.current, current().status)}>
-                            • {goalStatusLabel(current().status)}
+                            • {current().status}
                         </text>
                     </box>
 
@@ -232,7 +232,7 @@ function V2GoalSidebar(props: {
             {(current) => (
                 <box>
                     <text>
-                        <b>Goal</b> · {goalStatusLabel(current().status)}
+                        <b>Goal</b> · {current().status}
                     </text>
                     <text>{snippet(current().objective, 160)}</text>
                     <text>

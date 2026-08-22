@@ -1,4 +1,4 @@
-import {createGoalState} from "../core/goal.js";
+import {createGoalState, statusPayload} from "../core/goal.js";
 import {
     activeGoalContext,
     continuationPrompt,
@@ -103,10 +103,6 @@ type TranscriptTracker = {
     toolParts: Map<string, TranscriptPart>;
 };
 
-function asContext(value: unknown): V2Context {
-    return value as V2Context;
-}
-
 function asRecord(value: unknown): Record<string, unknown> | undefined {
     return typeof value === "object" && value !== null
         ? (value as Record<string, unknown>)
@@ -129,11 +125,6 @@ function v2Model(value: unknown): ModelRef | undefined {
     const modelID = stringValue(record?.id) ?? stringValue(record?.modelID);
     if (!providerID || !modelID) return undefined;
     return {providerID, modelID};
-}
-
-function modelForV2(value: ModelRef | undefined): V2Model | undefined {
-    if (!value) return undefined;
-    return {providerID: value.providerID, id: value.modelID};
 }
 
 function eventSessionID(event: V2Event): string | undefined {
@@ -360,15 +351,6 @@ function mergeMessages(
     );
 }
 
-function statusPayload(goal: GoalState | undefined): string {
-    if (!goal) return JSON.stringify({goal: null});
-    return JSON.stringify(
-        {goal},
-        null,
-        2,
-    );
-}
-
 async function sessionStore(
     context: V2Context,
     sessionID: string,
@@ -412,7 +394,7 @@ async function evaluateGoalV2(
             title: `[goal evaluator] ${goal.objective.slice(0, 60)}`,
             location: {directory: parent.location.directory},
             ...(options.evaluatorAgent ? {agent: options.evaluatorAgent} : {}),
-            ...(model ? {model: modelForV2(model)} : {}),
+            ...(model ? {model: {providerID: model.providerID, id: model.modelID}} : {}),
         });
     } catch {
         return {
@@ -733,8 +715,8 @@ async function registerTools(
 }
 
 export async function setupV2(value: unknown): Promise<() => void> {
-    const context = asContext(value);
-    const options = resolveV2Options(context.options);
+    const context = value as V2Context;
+    const options = resolveOptions(context.options as Record<string, unknown>);
     const trackers = new Map<string, TranscriptTracker>();
     const processing = new Set<string>();
 
@@ -793,12 +775,6 @@ export async function setupV2(value: unknown): Promise<() => void> {
         controller.abort();
         void iterator.return?.();
     };
-}
-
-function resolveV2Options(
-    options: Readonly<Record<string, unknown>>,
-): ResolvedGoalPluginOptions {
-    return resolveOptions(options as Record<string, unknown>);
 }
 
 const v2Plugin = {

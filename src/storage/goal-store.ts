@@ -4,14 +4,6 @@ import path from "node:path";
 import {mkdir, readFile, rename, unlink, writeFile} from "node:fs/promises";
 import {GOAL_STATUSES, type GoalState} from "../core/types.js";
 
-export interface GoalStore {
-    get(sessionID: string): Promise<GoalState | undefined>;
-
-    set(goal: GoalState): Promise<void>;
-
-    clear(sessionID: string): Promise<void>;
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -105,7 +97,7 @@ export function scopedStateDirectory(
     return path.join(root, safeSegment(scope));
 }
 
-export class FileGoalStore implements GoalStore {
+export class FileGoalStore {
     constructor(private readonly directory: string) {
     }
 
@@ -146,20 +138,4 @@ export class FileGoalStore implements GoalStore {
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
     return error instanceof Error && "code" in error;
-}
-
-export class MemoryGoalStore implements GoalStore {
-    private readonly values = new Map<string, GoalState>();
-
-    async get(sessionID: string): Promise<GoalState | undefined> {
-        return this.values.get(sessionID);
-    }
-
-    async set(goal: GoalState): Promise<void> {
-        this.values.set(goal.sessionID, structuredClone(goal));
-    }
-
-    async clear(sessionID: string): Promise<void> {
-        this.values.delete(sessionID);
-    }
 }

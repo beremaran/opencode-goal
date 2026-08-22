@@ -50,3 +50,7 @@ export function goalSummary(goal: GoalState, now = Date.now()): string {
         ].join("\n") + reason
     );
 }
+
+export function statusPayload(goal: GoalState | undefined): string {
+    return JSON.stringify({goal: goal ?? null}, null, goal ? 2 : undefined);
+}
