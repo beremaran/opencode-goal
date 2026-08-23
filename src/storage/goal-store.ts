@@ -2,79 +2,31 @@ import {createHash, randomUUID} from "node:crypto";
 import {homedir} from "node:os";
 import path from "node:path";
 import {mkdir, readFile, rename, unlink, writeFile} from "node:fs/promises";
+import {z} from "zod";
 import {GOAL_STATUSES, type GoalState} from "../core/types.js";
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+const goalStateSchema = z.object({
+    version: z.literal(1),
+    goalId: z.string().min(1),
+    sessionID: z.string().min(1),
+    directory: z.string(),
+    objective: z.string().refine((value) => value.trim().length > 0),
+    status: z.enum(GOAL_STATUSES),
+    createdAt: z.number(),
+    updatedAt: z.number(),
+    completedAt: z.number().optional().catch(undefined),
+    turns: z.int().nonnegative(),
+    tokensUsed: z.int().nonnegative(),
+    startedMessageID: z.string().min(1).optional(),
+    lastEvaluatedMessageID: z.string().optional().catch(undefined),
+    lastReason: z.string().optional().catch(undefined),
+    completionClaim: z.record(z.string(), z.unknown()).optional().catch(undefined),
+    transcript: z.array(z.unknown()).optional().catch(undefined),
+});
 
 export function parseGoalState(value: unknown): GoalState | undefined {
-    if (!isRecord(value)) {
-        return undefined;
-    }
-    if (value.version !== 1) {
-        return undefined;
-    }
-    if (typeof value.goalId !== "string" || !value.goalId) {
-        return undefined;
-    }
-    if (typeof value.sessionID !== "string" || !value.sessionID) {
-        return undefined;
-    }
-    if (typeof value.directory !== "string") {
-        return undefined;
-    }
-    if (typeof value.objective !== "string" || !value.objective.trim()) {
-        return undefined;
-    }
-    if (typeof value.status !== "string" || !GOAL_STATUSES.includes(value.status as GoalState["status"])) {
-        return undefined;
-    }
-    if (!Number.isFinite(value.createdAt) || !Number.isFinite(value.updatedAt)) {
-        return undefined;
-    }
-    if (!Number.isSafeInteger(value.turns) || Number(value.turns) < 0) {
-        return undefined;
-    }
-    if (!Number.isSafeInteger(value.tokensUsed) || Number(value.tokensUsed) < 0) {
-        return undefined;
-    }
-    if (
-        value.startedMessageID !== undefined &&
-        (typeof value.startedMessageID !== "string" || !value.startedMessageID)
-    ) {
-        return undefined;
-    }
-    if (value.transcript !== undefined && !Array.isArray(value.transcript)) {
-        return undefined;
-    }
-
-    return {
-        version: 1,
-        goalId: value.goalId,
-        sessionID: value.sessionID,
-        directory: value.directory,
-        objective: value.objective,
-        status: value.status as GoalState["status"],
-        createdAt: value.createdAt as number,
-        updatedAt: value.updatedAt as number,
-        ...(typeof value.completedAt === "number" ? {completedAt: value.completedAt} : {}),
-        turns: value.turns as number,
-        tokensUsed: value.tokensUsed as number,
-        ...(typeof value.startedMessageID === "string" ? {startedMessageID: value.startedMessageID} : {}),
-        ...(typeof value.lastEvaluatedMessageID === "string"
-            ? {lastEvaluatedMessageID: value.lastEvaluatedMessageID}
-            : {}),
-        ...(typeof value.lastReason === "string" ? {lastReason: value.lastReason} : {}),
-        ...(isRecord(value.completionClaim)
-            ? {
-                  completionClaim: value.completionClaim as NonNullable<GoalState["completionClaim"]>,
-              }
-            : {}),
-        ...(Array.isArray(value.transcript)
-            ? {transcript: value.transcript as NonNullable<GoalState["transcript"]>}
-            : {}),
-    };
+    const parsed = goalStateSchema.safeParse(value);
+    return parsed.success ? (parsed.data as GoalState) : undefined;
 }
 
 function safeSegment(value: string): string {

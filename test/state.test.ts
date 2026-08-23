@@ -4,7 +4,7 @@ import {tmpdir} from "node:os";
 import path from "node:path";
 import test from "node:test";
 import {createGoalState} from "../src/core/goal.js";
-import {FileGoalStore} from "../src/storage/goal-store.js";
+import {FileGoalStore, parseGoalState} from "../src/storage/goal-store.js";
 
 test("persists, loads, and clears a goal atomically", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "opencode-goal-state-"));
@@ -37,4 +37,19 @@ test("treats corrupt state as absent", async (context) => {
 
     const store = new FileGoalStore(directory);
     assert.equal(await store.get("ses_bad"), undefined);
+});
+
+test("validates required state and drops malformed optional fields", () => {
+    const goal = createGoalState({
+        sessionID: "ses_123",
+        directory: "/workspace",
+        objective: "tests pass",
+        now: 10,
+        goalId: "goal_123",
+    });
+
+    const parsed = parseGoalState({...goal, lastReason: 42, transcript: "bad"});
+    assert.equal(parsed?.lastReason, undefined);
+    assert.equal(parsed?.transcript, undefined);
+    assert.equal(parseGoalState({...goal, turns: -1}), undefined);
 });
