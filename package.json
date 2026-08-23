@@ -47,6 +47,7 @@
     "node": ">=20",
     "opencode": ">=1.18.0"
   },
+  "packageManager": "bun@1.2.23",
   "publishConfig": {
     "access": "public",
     "provenance": true
@@ -55,9 +56,13 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsc -p tsconfig.test.json && node --test .test-dist/test/*.test.js",
+    "test:coverage": "tsc -p tsconfig.test.json && node --test --experimental-test-coverage --test-coverage-include=.test-dist/src/** --test-coverage-lines=65 --test-coverage-branches=60 --test-coverage-functions=70 .test-dist/test/*.test.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run format:check && npm run typecheck && npm test && npm run build",
+    "lint": "eslint .",
+    "package:check": "npm pack --dry-run --ignore-scripts",
+    "security:audit": "bun audit --audit-level=high",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run package:check",
     "prepack": "npm run build",
     "prepublishOnly": "npm run check"
   },
@@ -81,12 +86,15 @@
     "solid-js": "1.9.12"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@opentui/core": "^0.4.5",
     "@opentui/keymap": "^0.4.5",
     "@opentui/solid": "^0.4.5",
     "@types/node": "^24.1.0",
+    "eslint": "^10.9.0",
     "prettier": "^3.6.2",
     "solid-js": "^1.9.12",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.67.0"
   }
 }

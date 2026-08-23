@@ -12,23 +12,23 @@ Thanks for helping improve OpenCode Goal.
 
 ## Development setup
 
-You need Node.js 20 or newer.
+You need Node.js 20 or newer and Bun 1.2.23.
 
 ```bash
 git clone https://github.com/beremaran/opencode-goal.git
 cd opencode-goal
-npm install
-npm run check
+bun install
+bun run check
 ```
 
-To test the plugin in OpenCode, run `npm run build`, add the checkout's absolute
+To test the plugin in OpenCode, run `bun run build`, add the checkout's absolute
 path to the `plugin` array in `opencode.json`, and restart OpenCode.
 
 ## Pull requests
 
 1. Fork the repository and create a focused branch.
 2. Add or update tests for behavior changes.
-3. Run `npm run check`.
+3. Run `bun run check`.
 4. Update the README or changelog when users need to know about the change.
 5. Open a pull request explaining the problem, the solution, and how it was
    verified.

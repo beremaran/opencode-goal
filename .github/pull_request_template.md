@@ -6,7 +6,7 @@
 
 <!-- List the checks and manual scenarios you ran. -->
 
-- [ ] `npm run check`
+- [ ] `bun run check`
 - [ ] Tests cover behavior changes
 - [ ] User-facing documentation is updated where needed
 
