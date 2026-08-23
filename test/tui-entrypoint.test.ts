@@ -26,3 +26,22 @@ test("registers a goal contribution between Todo and Files", async () => {
         "function",
     );
 });
+
+test("defers V2 keymap registration until the sidebar renders", async () => {
+    let layerCalls = 0;
+    await plugin.setup({
+        options: {},
+        keymap: {
+            layer() {
+                layerCalls += 1;
+            },
+        },
+        ui: {
+            slot() {
+                return () => {};
+            },
+        },
+    });
+
+    assert.equal(layerCalls, 0);
+});

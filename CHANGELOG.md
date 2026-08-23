@@ -7,6 +7,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-08-23
+
+### Fixed
+
+- Defer OpenCode 2 TUI keymap registration until the sidebar renders inside
+  the keymap provider.
+
 ## [0.4.0] - 2026-08-23
 
 ### Removed
@@ -48,7 +55,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Provider failure and user interruption safeguards.
 - Strict type checking and automated behavioral tests.
 
-[Unreleased]: https://github.com/beremaran/opencode-goal/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/beremaran/opencode-goal/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/beremaran/opencode-goal/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/beremaran/opencode-goal/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/beremaran/opencode-goal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/beremaran/opencode-goal/compare/v0.1.0...v0.2.0

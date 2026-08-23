@@ -171,7 +171,47 @@ type V2TuiContext = {
     };
 };
 
-function V2GoalSidebar(props: {context: V2TuiContext; sessionID: string; stateRoot: string}) {
+async function runV2GoalCommand(
+    context: V2TuiContext,
+    options: ResolvedGoalPluginOptions,
+    rawInput: string | undefined,
+): Promise<void> {
+    const route = context.ui.router.current();
+    if (route.type !== "session" || !route.sessionID) {
+        return;
+    }
+    const session = context.data.session.get(route.sessionID);
+    if (!session) {
+        return;
+    }
+
+    const root = options.stateDirectory ?? defaultStateRoot();
+    const store = new FileGoalStore(scopedStateDirectory(root, session.projectID, session.location.directory));
+    const raw = (rawInput ?? "").replace(/^\/goal\b/i, "").trim();
+    const parsed = parseGoalCommand(raw);
+    const prompt = await goalCommandPrompt(store, route.sessionID, session.location.directory, parsed);
+
+    await context.client.session.prompt({sessionID: route.sessionID, text: prompt}).catch(() => undefined);
+}
+
+function V2GoalSidebar(props: {
+    context: V2TuiContext;
+    sessionID: string;
+    stateRoot: string;
+    options: ResolvedGoalPluginOptions;
+}) {
+    props.context.keymap.layer(() => ({
+        commands: [
+            {
+                id: "opencode-goal.goal",
+                title: "Goal",
+                description: "Set, inspect, pause, resume, or clear a persistent goal",
+                slash: {name: "goal", aliases: ["g"], arguments: true},
+                run: (input) => runV2GoalCommand(props.context, props.options, input),
+            },
+        ],
+    }));
+
     const [goal, setGoal] = createSignal<GoalState>();
     const [now, setNow] = createSignal(Date.now());
     let requestID = 0;
@@ -230,47 +270,15 @@ function V2GoalSidebar(props: {context: V2TuiContext; sessionID: string; stateRo
     );
 }
 
-async function runV2GoalCommand(
-    context: V2TuiContext,
-    options: ResolvedGoalPluginOptions,
-    rawInput: string | undefined,
-): Promise<void> {
-    const route = context.ui.router.current();
-    if (route.type !== "session" || !route.sessionID) {
-        return;
-    }
-    const session = context.data.session.get(route.sessionID);
-    if (!session) {
-        return;
-    }
-
-    const root = options.stateDirectory ?? defaultStateRoot();
-    const store = new FileGoalStore(scopedStateDirectory(root, session.projectID, session.location.directory));
-    const raw = (rawInput ?? "").replace(/^\/goal\b/i, "").trim();
-    const parsed = parseGoalCommand(raw);
-    const prompt = await goalCommandPrompt(store, route.sessionID, session.location.directory, parsed);
-
-    await context.client.session.prompt({sessionID: route.sessionID, text: prompt}).catch(() => undefined);
-}
-
 async function setupV2Tui(value: unknown): Promise<() => void> {
     const context = value as V2TuiContext;
     const options = resolveOptions(context.options as Record<string, unknown> | undefined);
     const stateRoot = options.stateDirectory ?? defaultStateRoot();
-    context.keymap.layer(() => ({
-        commands: [
-            {
-                id: "opencode-goal.goal",
-                title: "Goal",
-                description: "Set, inspect, pause, resume, or clear a persistent goal",
-                slash: {name: "goal", aliases: ["g"], arguments: true},
-                run: (input) => runV2GoalCommand(context, options, input),
-            },
-        ],
-    }));
     return context.ui.slot({
         append: "sidebar.content",
-        render: (props) => <V2GoalSidebar context={context} sessionID={props.sessionID} stateRoot={stateRoot} />,
+        render: (props) => (
+            <V2GoalSidebar context={context} sessionID={props.sessionID} stateRoot={stateRoot} options={options} />
+        ),
     });
 }
 
