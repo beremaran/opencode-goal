@@ -10,8 +10,8 @@ The package is published as `@beremaran/opencode-goal`.
 2. Seed the package from a clean `main` checkout:
 
     ```bash
-    npm ci
-    npm run check
+    bun install --frozen-lockfile
+    bun run check
     npm publish --access public
     ```
 
@@ -27,10 +27,10 @@ configured.
 
 ## Regular release
 
-1. Update the version in `package.json` and `package-lock.json`.
+1. Update the version in `package.json`.
 2. Move the relevant changelog entries from `Unreleased` into a dated version.
-3. Run `npm run check` and `npm pack --dry-run`.
-4. Merge the release change into `main`.
+3. Run `bun install --frozen-lockfile` and `bun run check`.
+4. Commit and push the release change to `main`.
 5. Publish a GitHub release whose tag exactly matches `v<package version>`.
 
 Publishing the GitHub release runs `.github/workflows/publish.yml`. The workflow

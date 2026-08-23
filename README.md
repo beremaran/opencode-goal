@@ -215,8 +215,8 @@ When `XDG_STATE_HOME` is unset, the root is
 ```bash
 git clone https://github.com/beremaran/opencode-goal.git
 cd opencode-goal
-npm install
-npm run check
+bun install
+bun run check
 ```
 
 To load the checkout directly, add its absolute path to `opencode.json`:
@@ -228,7 +228,7 @@ To load the checkout directly, add its absolute path to `opencode.json`:
 }
 ```
 
-Run `npm run build` and restart OpenCode after changing the plugin.
+Run `bun run build` and restart OpenCode after changing the plugin.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and
 [RELEASING.md](RELEASING.md) for maintainer release instructions.
