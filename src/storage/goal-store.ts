@@ -9,19 +9,33 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function parseGoalState(value: unknown): GoalState | undefined {
-    if (!isRecord(value)) return undefined;
-    if (value.version !== 1) return undefined;
-    if (typeof value.goalId !== "string" || !value.goalId) return undefined;
-    if (typeof value.sessionID !== "string" || !value.sessionID) return undefined;
-    if (typeof value.directory !== "string") return undefined;
-    if (typeof value.objective !== "string" || !value.objective.trim()) return undefined;
+    if (!isRecord(value)) {
+        return undefined;
+    }
+    if (value.version !== 1) {
+        return undefined;
+    }
+    if (typeof value.goalId !== "string" || !value.goalId) {
+        return undefined;
+    }
+    if (typeof value.sessionID !== "string" || !value.sessionID) {
+        return undefined;
+    }
+    if (typeof value.directory !== "string") {
+        return undefined;
+    }
+    if (typeof value.objective !== "string" || !value.objective.trim()) {
+        return undefined;
+    }
     if (typeof value.status !== "string" || !GOAL_STATUSES.includes(value.status as GoalState["status"])) {
         return undefined;
     }
     if (!Number.isFinite(value.createdAt) || !Number.isFinite(value.updatedAt)) {
         return undefined;
     }
-    if (!Number.isSafeInteger(value.turns) || Number(value.turns) < 0) return undefined;
+    if (!Number.isSafeInteger(value.turns) || Number(value.turns) < 0) {
+        return undefined;
+    }
     if (!Number.isSafeInteger(value.tokensUsed) || Number(value.tokensUsed) < 0) {
         return undefined;
     }
@@ -64,7 +78,9 @@ export function parseGoalState(value: unknown): GoalState | undefined {
 }
 
 function safeSegment(value: string): string {
-    if (/^[a-zA-Z0-9._-]+$/.test(value)) return value;
+    if (/^[a-zA-Z0-9._-]+$/.test(value)) {
+        return value;
+    }
     return createHash("sha256").update(value).digest("hex").slice(0, 24);
 }
 
@@ -86,7 +102,9 @@ export class FileGoalStore {
             const contents = await readFile(this.file(sessionID), "utf8");
             return parseGoalState(JSON.parse(contents));
         } catch (error) {
-            if (isNodeError(error) && error.code === "ENOENT") return undefined;
+            if (isNodeError(error) && error.code === "ENOENT") {
+                return undefined;
+            }
             return undefined;
         }
     }
@@ -106,7 +124,9 @@ export class FileGoalStore {
         try {
             await unlink(this.file(sessionID));
         } catch (error) {
-            if (isNodeError(error) && error.code === "ENOENT") return;
+            if (isNodeError(error) && error.code === "ENOENT") {
+                return;
+            }
             throw error;
         }
     }

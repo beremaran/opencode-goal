@@ -1,7 +1,9 @@
 import type {GoalState} from "../core/types.js";
 
 export function compactCount(value: number): string {
-    if (value < 1_000) return value.toLocaleString();
+    if (value < 1_000) {
+        return value.toLocaleString();
+    }
 
     const divisor = value < 1_000_000 ? 1_000 : 1_000_000;
     const suffix = value < 1_000_000 ? "k" : "m";
@@ -17,6 +19,8 @@ export function goalElapsedMilliseconds(goal: GoalState, now = Date.now()): numb
 
 export function snippet(value: string, maxLength = 120): string {
     const normalized = value.replace(/\s+/g, " ").trim();
-    if (normalized.length <= maxLength) return normalized;
+    if (normalized.length <= maxLength) {
+        return normalized;
+    }
     return `${normalized.slice(0, Math.max(maxLength - 1, 0)).trimEnd()}…`;
 }

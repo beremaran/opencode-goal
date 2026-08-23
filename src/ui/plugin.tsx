@@ -58,11 +58,15 @@ function GoalSidebar(props: {api: TuiPluginApi; sessionID: string; stateRoot: st
         }
 
         const next = await loadSessionGoal(props.stateRoot, session);
-        if (currentRequest === requestID) setGoal(next);
+        if (currentRequest === requestID) {
+            setGoal(next);
+        }
     };
 
     const scheduleRefresh = (): void => {
-        if (refreshTimer !== undefined) clearTimeout(refreshTimer);
+        if (refreshTimer !== undefined) {
+            clearTimeout(refreshTimer);
+        }
         refreshTimer = setTimeout(() => {
             refreshTimer = undefined;
             void refresh();
@@ -76,7 +80,9 @@ function GoalSidebar(props: {api: TuiPluginApi; sessionID: string; stateRoot: st
     });
 
     const onSessionEvent = (event: {properties: {sessionID: string}}): void => {
-        if (event.properties.sessionID === props.sessionID) scheduleRefresh();
+        if (event.properties.sessionID === props.sessionID) {
+            scheduleRefresh();
+        }
     };
 
     const unsubscribe = [
@@ -88,14 +94,20 @@ function GoalSidebar(props: {api: TuiPluginApi; sessionID: string; stateRoot: st
 
     const interval = setInterval(() => {
         setNow(Date.now());
-        if (goal()?.status === "active") void refresh();
+        if (goal()?.status === "active") {
+            void refresh();
+        }
     }, ACTIVE_POLL_MS);
 
     onCleanup(() => {
         requestID += 1;
-        if (refreshTimer !== undefined) clearTimeout(refreshTimer);
+        if (refreshTimer !== undefined) {
+            clearTimeout(refreshTimer);
+        }
         clearInterval(interval);
-        for (const dispose of unsubscribe) dispose();
+        for (const dispose of unsubscribe) {
+            dispose();
+        }
     });
 
     return (
@@ -176,7 +188,9 @@ function V2GoalSidebar(props: {context: V2TuiContext; sessionID: string; stateRo
             projectID: session.projectID,
             directory: session.location.directory,
         });
-        if (currentRequest === requestID) setGoal(next);
+        if (currentRequest === requestID) {
+            setGoal(next);
+        }
     };
 
     createEffect(() => {
@@ -185,11 +199,15 @@ function V2GoalSidebar(props: {context: V2TuiContext; sessionID: string; stateRo
     });
 
     const unsubscribe = props.context.data.on("session.idle", (event) => {
-        if (event.data?.sessionID === props.sessionID) void refresh();
+        if (event.data?.sessionID === props.sessionID) {
+            void refresh();
+        }
     });
     const interval = setInterval(() => {
         setNow(Date.now());
-        if (goal()?.status === "active") void refresh();
+        if (goal()?.status === "active") {
+            void refresh();
+        }
     }, ACTIVE_POLL_MS);
 
     onCleanup(() => {
@@ -218,9 +236,13 @@ async function runV2GoalCommand(
     rawInput: string | undefined,
 ): Promise<void> {
     const route = context.ui.router.current();
-    if (route.type !== "session" || !route.sessionID) return;
+    if (route.type !== "session" || !route.sessionID) {
+        return;
+    }
     const session = context.data.session.get(route.sessionID);
-    if (!session) return;
+    if (!session) {
+        return;
+    }
 
     const root = options.stateDirectory ?? defaultStateRoot();
     const store = new FileGoalStore(scopedStateDirectory(root, session.projectID, session.location.directory));

@@ -78,7 +78,9 @@ export async function evaluateTranscript(
 }
 
 function responseText(parts: unknown): string {
-    if (!Array.isArray(parts)) return "";
+    if (!Array.isArray(parts)) {
+        return "";
+    }
     return parts
         .filter(
             (part): part is {type: "text"; text: string} =>

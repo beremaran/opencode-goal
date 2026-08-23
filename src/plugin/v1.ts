@@ -26,7 +26,9 @@ const tool = Object.assign(
 
 function replaceTextPart(parts: Array<{type: string; text?: string}>, text: string): void {
     const part = parts.find((candidate) => candidate.type === "text");
-    if (!part) throw new Error("The /goal command template did not produce a text part");
+    if (!part) {
+        throw new Error("The /goal command template did not produce a text part");
+    }
     part.text = text;
 }
 
@@ -69,7 +71,9 @@ async function showToast(
 }
 
 function isParentBusy(statuses: unknown, sessionID: string): boolean {
-    if (typeof statuses !== "object" || statuses === null) return false;
+    if (typeof statuses !== "object" || statuses === null) {
+        return false;
+    }
     const status = (statuses as Record<string, {type?: string}>)[sessionID];
     return Boolean(status && status.type !== "idle");
 }
@@ -101,8 +105,12 @@ async function continueParent(
     } = {
         parts: [{type: "text", text}],
     };
-    if (execution.agent) body.agent = execution.agent;
-    if (execution.model) body.model = execution.model;
+    if (execution.agent) {
+        body.agent = execution.agent;
+    }
+    if (execution.model) {
+        body.model = execution.model;
+    }
 
     const response = await client.session.promptAsync({
         path: {id: goal.sessionID},
@@ -124,12 +132,16 @@ async function handleIdle(input: {
     processing: Set<string>;
     log: Logger;
 }): Promise<void> {
-    if (input.processing.has(input.sessionID)) return;
+    if (input.processing.has(input.sessionID)) {
+        return;
+    }
     input.processing.add(input.sessionID);
 
     try {
         const goal = await input.store.get(input.sessionID);
-        if (!goal || goal.status !== "active") return;
+        if (!goal || goal.status !== "active") {
+            return;
+        }
 
         const response = await input.client.session.messages({
             path: {id: input.sessionID},
@@ -144,7 +156,9 @@ async function handleIdle(input: {
 
         const messages = Array.isArray(response.data) ? (response.data as TranscriptMessage[]) : [];
         const assistant = latestAssistant(messages, goal.createdAt, goal.startedMessageID);
-        if (!assistant || assistant.info.id === goal.lastEvaluatedMessageID) return;
+        if (!assistant || assistant.info.id === goal.lastEvaluatedMessageID) {
+            return;
+        }
 
         const progress = recordGoalTurn(
             goal,
@@ -221,21 +235,31 @@ const v1GoalPlugin: Plugin = async (input, rawOptions) => {
         },
 
         "command.execute.before": async (command, output) => {
-            if (command.command !== "goal") return;
+            if (command.command !== "goal") {
+                return;
+            }
             const parsed = parseGoalCommand(command.arguments);
-            if (parsed.action !== "set") controlTurns.add(command.sessionID);
+            if (parsed.action !== "set") {
+                controlTurns.add(command.sessionID);
+            }
             replaceTextPart(output.parts, await goalCommandPrompt(store, command.sessionID, input.directory, parsed));
         },
 
         "experimental.chat.system.transform": async ({sessionID}, output) => {
-            if (!sessionID || controlTurns.has(sessionID)) return;
+            if (!sessionID || controlTurns.has(sessionID)) {
+                return;
+            }
             const goal = await store.get(sessionID);
-            if (goal?.status === "active") output.system.push(activeGoalContext(goal));
+            if (goal?.status === "active") {
+                output.system.push(activeGoalContext(goal));
+            }
         },
 
         "experimental.session.compacting": async ({sessionID}, output) => {
             const goal = await store.get(sessionID);
-            if (goal?.status === "active") output.context.push(activeGoalContext(goal));
+            if (goal?.status === "active") {
+                output.context.push(activeGoalContext(goal));
+            }
         },
 
         tool: {
@@ -286,7 +310,9 @@ const v1GoalPlugin: Plugin = async (input, rawOptions) => {
                 },
                 async execute(args, context) {
                     const goal = await store.get(context.sessionID);
-                    if (!goal) return "No goal exists for this session.";
+                    if (!goal) {
+                        return "No goal exists for this session.";
+                    }
                     if (goal.status !== "active") {
                         return `The goal is ${goal.status}, so it cannot be updated by the model.`;
                     }

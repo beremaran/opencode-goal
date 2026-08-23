@@ -103,7 +103,9 @@ function v2Model(value: unknown): ModelRef | undefined {
     const record = asRecord(value);
     const providerID = stringValue(record?.providerID);
     const modelID = stringValue(record?.id) ?? stringValue(record?.modelID);
-    if (!providerID || !modelID) return undefined;
+    if (!providerID || !modelID) {
+        return undefined;
+    }
     return {providerID, modelID};
 }
 
@@ -117,7 +119,9 @@ function eventTime(event: V2Event): number {
 
 function trackerFor(trackers: Map<string, TranscriptTracker>, sessionID: string): TranscriptTracker {
     const current = trackers.get(sessionID);
-    if (current) return current;
+    if (current) {
+        return current;
+    }
     const created: TranscriptTracker = {
         messages: new Map(),
         toolNames: new Map(),
@@ -130,9 +134,13 @@ function trackerFor(trackers: Map<string, TranscriptTracker>, sessionID: string)
 function assistantFor(tracker: TranscriptTracker, event: V2Event): TranscriptMessage | undefined {
     const data = event.data;
     const id = stringValue(data?.assistantMessageID);
-    if (!id) return undefined;
+    if (!id) {
+        return undefined;
+    }
     const existing = tracker.messages.get(id);
-    if (existing) return existing;
+    if (existing) {
+        return existing;
+    }
 
     const info: TranscriptMessage["info"] = {
         id,
@@ -141,8 +149,12 @@ function assistantFor(tracker: TranscriptTracker, event: V2Event): TranscriptMes
     };
     const agent = stringValue(data?.agent);
     const model = v2Model(data?.model);
-    if (agent) info.agent = agent;
-    if (model) info.model = model;
+    if (agent) {
+        info.agent = agent;
+    }
+    if (model) {
+        info.model = model;
+    }
     const message: TranscriptMessage = {
         info,
         parts: [],
@@ -152,7 +164,9 @@ function assistantFor(tracker: TranscriptTracker, event: V2Event): TranscriptMes
 }
 
 function addTextPart(message: TranscriptMessage, text: string): void {
-    if (!text) return;
+    if (!text) {
+        return;
+    }
     const previous = message.parts.at(-1);
     if (previous?.type === "text") {
         previous.text = `${previous.text ?? ""}${text}`;
@@ -168,7 +182,9 @@ function toolPart(
     name?: string,
 ): TranscriptPart {
     const existing = tracker.toolParts.get(callID);
-    if (existing) return existing;
+    if (existing) {
+        return existing;
+    }
 
     const tool = name ?? tracker.toolNames.get(callID) ?? "unknown";
     tracker.toolNames.set(callID, tool);
@@ -183,7 +199,9 @@ function toolPart(
 }
 
 function textFromContent(value: unknown): string {
-    if (!Array.isArray(value)) return "";
+    if (!Array.isArray(value)) {
+        return "";
+    }
     return value
         .map((item) => {
             const record = asRecord(item);
@@ -195,16 +213,22 @@ function textFromContent(value: unknown): string {
 
 function captureEvent(trackers: Map<string, TranscriptTracker>, event: V2Event): void {
     const sessionID = eventSessionID(event);
-    if (!sessionID) return;
+    if (!sessionID) {
+        return;
+    }
     const tracker = trackerFor(trackers, sessionID);
     const data = event.data ?? {};
 
     if (event.type === "session.inbox.enqueued") {
         const item = asRecord(data.item);
         const payload = asRecord(item?.payload);
-        if (item?.type !== "user" || !payload) return;
+        if (item?.type !== "user" || !payload) {
+            return;
+        }
         const text = stringValue(payload.text);
-        if (!text) return;
+        if (!text) {
+            return;
+        }
         const id = stringValue(data.inboxID) ?? event.id ?? `user-${eventTime(event)}`;
         tracker.messages.set(id, {
             info: {
@@ -225,7 +249,9 @@ function captureEvent(trackers: Map<string, TranscriptTracker>, event: V2Event):
     if (event.type === "session.text.delta") {
         const message = assistantFor(tracker, event);
         const text = stringValue(data.delta);
-        if (message && text) addTextPart(message, text);
+        if (message && text) {
+            addTextPart(message, text);
+        }
         return;
     }
 
@@ -234,8 +260,11 @@ function captureEvent(trackers: Map<string, TranscriptTracker>, event: V2Event):
         const text = stringValue(data.text);
         if (message && text) {
             const last = message.parts.at(-1);
-            if (last?.type === "text") last.text = text;
-            else message.parts.push({type: "text", text});
+            if (last?.type === "text") {
+                last.text = text;
+            } else {
+                message.parts.push({type: "text", text});
+            }
         }
         return;
     }
@@ -243,34 +272,46 @@ function captureEvent(trackers: Map<string, TranscriptTracker>, event: V2Event):
     if (event.type === "session.tool.input.started") {
         const callID = stringValue(data.id);
         const name = stringValue(data.name);
-        if (callID && name) tracker.toolNames.set(callID, name);
+        if (callID && name) {
+            tracker.toolNames.set(callID, name);
+        }
         const message = assistantFor(tracker, event);
-        if (message && callID) toolPart(message, tracker, callID, name);
+        if (message && callID) {
+            toolPart(message, tracker, callID, name);
+        }
         return;
     }
 
     if (event.type === "session.tool.called") {
         const message = assistantFor(tracker, event);
         const callID = stringValue(data.id);
-        if (message && callID) toolPart(message, tracker, callID);
+        if (message && callID) {
+            toolPart(message, tracker, callID);
+        }
         return;
     }
 
     if (event.type === "session.tool.success" || event.type === "session.tool.failed") {
         const message = assistantFor(tracker, event);
         const callID = stringValue(data.id);
-        if (!message || !callID) return;
+        if (!message || !callID) {
+            return;
+        }
         const part = toolPart(message, tracker, callID);
         const state = part.state ?? {};
         if (event.type === "session.tool.success") {
             state.status = "completed";
             const output = textFromContent(data.content);
-            if (output) state.output = output;
+            if (output) {
+                state.output = output;
+            }
         } else {
             state.status = "error";
             const error = asRecord(data.error);
             const messageText = stringValue(error?.message);
-            if (messageText) state.error = messageText;
+            if (messageText) {
+                state.error = messageText;
+            }
         }
         part.state = state;
         return;
@@ -278,7 +319,9 @@ function captureEvent(trackers: Map<string, TranscriptTracker>, event: V2Event):
 
     if (event.type === "session.step.ended") {
         const message = assistantFor(tracker, event);
-        if (!message) return;
+        if (!message) {
+            return;
+        }
         const tokens = asRecord(data.tokens);
         if (tokens) {
             const input = numberValue(tokens.input) ?? 0;
@@ -305,8 +348,12 @@ function liveMessages(trackers: Map<string, TranscriptTracker>, sessionID: strin
 
 function mergeMessages(saved: TranscriptMessage[] | undefined, live: TranscriptMessage[]): TranscriptMessage[] {
     const byID = new Map<string, TranscriptMessage>();
-    for (const message of saved ?? []) byID.set(message.info.id, message);
-    for (const message of live) byID.set(message.info.id, message);
+    for (const message of saved ?? []) {
+        byID.set(message.info.id, message);
+    }
+    for (const message of live) {
+        byID.set(message.info.id, message);
+    }
     return [...byID.values()].sort((a, b) => a.info.time.created - b.info.time.created);
 }
 
@@ -383,16 +430,22 @@ async function handleIdle(
     trackers: Map<string, TranscriptTracker>,
     processing: Set<string>,
 ): Promise<void> {
-    if (processing.has(sessionID)) return;
+    if (processing.has(sessionID)) {
+        return;
+    }
     processing.add(sessionID);
     try {
         const {store, session} = await sessionStore(context, sessionID, options);
         const goal = await store.get(sessionID);
-        if (!goal || goal.status !== "active") return;
+        if (!goal || goal.status !== "active") {
+            return;
+        }
 
         const messages = mergeMessages(goal.transcript, liveMessages(trackers, sessionID));
         const assistant = latestAssistant(messages, goal.createdAt, goal.startedMessageID);
-        if (!assistant || assistant.info.id === goal.lastEvaluatedMessageID) return;
+        if (!assistant || assistant.info.id === goal.lastEvaluatedMessageID) {
+            return;
+        }
 
         const progress = recordGoalTurn(
             goal,
@@ -410,7 +463,9 @@ async function handleIdle(
 
         const updated = applyEvaluation(current, decision);
         await store.set(updated);
-        if (decision.error || decision.complete) return;
+        if (decision.error || decision.complete) {
+            return;
+        }
 
         const continuing = updated;
         if (options.continuationDelayMs > 0) {
@@ -433,7 +488,9 @@ async function pauseAfterInterrupt(
 ): Promise<void> {
     const {store} = await sessionStore(context, sessionID, options);
     const goal = await store.get(sessionID);
-    if (!goal || goal.status !== "active") return;
+    if (!goal || goal.status !== "active") {
+        return;
+    }
     await store.set({
         ...goal,
         status: "paused",
@@ -486,7 +543,9 @@ async function registerTools(
                 }
 
                 const objective = stringValue(input.objective)?.trim();
-                if (!objective) return result("Goal creation rejected: objective is required.");
+                if (!objective) {
+                    return result("Goal creation rejected: objective is required.");
+                }
                 const messageID = toolContext.messageID;
                 const goal = createGoalState({
                     sessionID: toolContext.sessionID,
@@ -495,7 +554,9 @@ async function registerTools(
                     startedMessageID: messageID,
                 });
                 const messages = liveMessages(trackers, toolContext.sessionID);
-                if (messages.length > 0) goal.transcript = messages;
+                if (messages.length > 0) {
+                    goal.transcript = messages;
+                }
                 await store.set(goal);
                 return result(
                     `Goal created. Continue working toward it until it is complete or genuinely blocked.\n${statusPayload(goal)}`,
@@ -530,7 +591,9 @@ async function registerTools(
             async execute(input, toolContext) {
                 const {store} = await sessionStore(context, toolContext.sessionID, options);
                 const goal = await store.get(toolContext.sessionID);
-                if (!goal) return result("No goal exists for this session.");
+                if (!goal) {
+                    return result("No goal exists for this session.");
+                }
                 if (goal.status !== "active") {
                     return result(`The goal is ${goal.status}, so it cannot be updated by the model.`);
                 }
@@ -583,11 +646,15 @@ export async function setupV2(value: unknown): Promise<() => void> {
     const consume = async (): Promise<void> => {
         while (!controller.signal.aborted) {
             const next = await iterator.next();
-            if (next.done) return;
+            if (next.done) {
+                return;
+            }
             const event = next.value;
             captureEvent(trackers, event);
             const sessionID = eventSessionID(event);
-            if (!sessionID) continue;
+            if (!sessionID) {
+                continue;
+            }
 
             if (event.type === "session.idle") {
                 await handleIdle(context, sessionID, options, trackers, processing).catch(() => undefined);

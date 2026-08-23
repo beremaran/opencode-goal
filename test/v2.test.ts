@@ -22,8 +22,11 @@ function eventQueue() {
     return {
         push(value: TestEvent) {
             const resolve = waiters.shift();
-            if (resolve) resolve({value, done: false});
-            else values.push(value);
+            if (resolve) {
+                resolve({value, done: false});
+            } else {
+                values.push(value);
+            }
         },
         subscribe(): AsyncIterable<TestEvent> {
             return {
@@ -36,12 +39,16 @@ function eventQueue() {
                                     done: false,
                                 });
                             }
-                            if (closed) return Promise.resolve({value: undefined, done: true});
+                            if (closed) {
+                                return Promise.resolve({value: undefined, done: true});
+                            }
                             return new Promise<IteratorResult<TestEvent>>((resolve) => waiters.push(resolve));
                         },
                         return() {
                             closed = true;
-                            for (const resolve of waiters.splice(0)) resolve({value: undefined, done: true});
+                            for (const resolve of waiters.splice(0)) {
+                                resolve({value: undefined, done: true});
+                            }
                             return Promise.resolve({value: undefined, done: true});
                         },
                     };
