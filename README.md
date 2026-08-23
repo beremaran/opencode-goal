@@ -44,8 +44,8 @@ explicit V2 entrypoint for beta builds that require a separate object module:
 
 ```json
 {
-  "$schema": "https://opencode.ai/config.json",
-  "plugins": ["@beremaran/opencode-goal/v2"]
+    "$schema": "https://opencode.ai/config.json",
+    "plugins": ["@beremaran/opencode-goal/v2"]
 }
 ```
 
@@ -55,8 +55,8 @@ the package's TUI entrypoint. Add that entrypoint to
 
 ```json
 {
-  "$schema": "https://opencode.ai/config.json",
-  "plugins": ["@beremaran/opencode-goal/tui"]
+    "$schema": "https://opencode.ai/config.json",
+    "plugins": ["@beremaran/opencode-goal/tui"]
 }
 ```
 
@@ -68,8 +68,8 @@ For manual installation, add the package to `opencode.json`:
 
 ```json
 {
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": ["@beremaran/opencode-goal"]
+    "$schema": "https://opencode.ai/config.json",
+    "plugin": ["@beremaran/opencode-goal"]
 }
 ```
 
@@ -77,8 +77,8 @@ Then add the same package to `tui.json` to enable the sidebar:
 
 ```json
 {
-  "$schema": "https://opencode.ai/tui.json",
-  "plugin": ["@beremaran/opencode-goal"]
+    "$schema": "https://opencode.ai/tui.json",
+    "plugin": ["@beremaran/opencode-goal"]
 }
 ```
 
@@ -130,9 +130,9 @@ The section disappears when the session has no goal.
    tokens are excluded.
 4. A temporary child session evaluates the completion condition with tools
    disabled. The evaluator model is selected in this order:
-   - Plugin option `evaluatorModel`
-   - OpenCode `small_model`
-   - The parent session model
+    - Plugin option `evaluatorModel`
+    - OpenCode `small_model`
+    - The parent session model
 5. A negative decision and its reason are injected through
    `session.promptAsync()`, starting the next turn.
 6. A positive decision marks the durable goal complete and stops continuation.
@@ -163,18 +163,18 @@ Plugin options can be supplied in an OpenCode plugin entry:
 
 ```json
 {
-  "plugin": [
-    [
-      "@beremaran/opencode-goal",
-      {
-        "evaluatorModel": "anthropic/claude-haiku-4-5",
-        "maxTranscriptChars": 48000,
-        "continuationDelayMs": 250,
-        "deleteEvaluatorSessions": true,
-        "stateDirectory": "/custom/state/root"
-      }
+    "plugin": [
+        [
+            "@beremaran/opencode-goal",
+            {
+                "evaluatorModel": "anthropic/claude-haiku-4-5",
+                "maxTranscriptChars": 48000,
+                "continuationDelayMs": 250,
+                "deleteEvaluatorSessions": true,
+                "stateDirectory": "/custom/state/root"
+            }
+        ]
     ]
-  ]
 }
 ```
 
@@ -223,8 +223,8 @@ To load the checkout directly, add its absolute path to `opencode.json`:
 
 ```json
 {
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": ["/absolute/path/to/opencode-goal"]
+    "$schema": "https://opencode.ai/config.json",
+    "plugin": ["/absolute/path/to/opencode-goal"]
 }
 ```
 

@@ -1,16 +1,16 @@
-import { goalSummary } from "./goal.js";
-import type { GoalState } from "./types.js";
+import {goalSummary} from "./goal.js";
+import type {GoalState} from "./types.js";
 
 export function escapeXmlText(input: string): string {
-  return input.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    return input.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
 function progressContext(goal: GoalState): string {
-  return [`turns_used=${goal.turns}`, `tokens_used=${goal.tokensUsed}`].join(" ");
+    return [`turns_used=${goal.turns}`, `tokens_used=${goal.tokensUsed}`].join(" ");
 }
 
 export function activeGoalContext(goal: GoalState): string {
-  return `<active-goal>
+    return `<active-goal>
 <objective>${escapeXmlText(goal.objective)}</objective>
 <progress>${progressContext(goal)}</progress>
 </active-goal>
@@ -19,7 +19,7 @@ Keep working toward this objective while it is active. Do not claim completion w
 }
 
 export function startingPrompt(goal: GoalState): string {
-  return `<goal>
+    return `<goal>
 <objective>${escapeXmlText(goal.objective)}</objective>
 <progress>${progressContext(goal)}</progress>
 </goal>
@@ -30,7 +30,7 @@ Do not stop merely because the work is difficult, lengthy, or would benefit from
 }
 
 export function continuationPrompt(goal: GoalState): string {
-  return `<goal-continuation>
+    return `<goal-continuation>
 <objective>${escapeXmlText(goal.objective)}</objective>
 <progress>${progressContext(goal)}</progress>
 <evaluation>${escapeXmlText(goal.lastReason ?? "The completion condition is not yet established.")}</evaluation>
@@ -42,16 +42,16 @@ If the objective is genuinely complete, call update_goal with status "complete" 
 }
 
 export function statusPrompt(goal: GoalState | undefined): string {
-  if (!goal) {
-    return "This is a goal status request. Tell the user there is no goal for this session. Do not start unrelated work.";
-  }
-  return `This is a goal status request. Report the following state concisely without starting unrelated work:
+    if (!goal) {
+        return "This is a goal status request. Tell the user there is no goal for this session. Do not start unrelated work.";
+    }
+    return `This is a goal status request. Report the following state concisely without starting unrelated work:
 
 ${goalSummary(goal)}`;
 }
 
 export function helpPrompt(): string {
-  return `Explain this plugin's /goal syntax concisely:
+    return `Explain this plugin's /goal syntax concisely:
 
 /goal <completion condition>
 /goal
@@ -63,7 +63,7 @@ Mention that active goals are independently evaluated after each turn and automa
 }
 
 export function actionPrompt(message: string): string {
-  return `This is a goal-control request. Tell the user: ${message} Do not start unrelated work.`;
+    return `This is a goal-control request. Tell the user: ${message} Do not start unrelated work.`;
 }
 
 export const EVALUATOR_SYSTEM_PROMPT = `You are a conservative completion evaluator for a long-running coding-agent goal.
@@ -74,8 +74,10 @@ Return exactly one JSON object with this shape and no markdown:
 {"complete":false,"reason":"one short, actionable sentence"}`;
 
 export function evaluatorPrompt(goal: GoalState, transcript: string): string {
-  const claim = goal.completionClaim ? `\nThe working agent claimed completion: ${goal.completionClaim.reason}\n` : "";
-  return `<completion-condition>
+    const claim = goal.completionClaim
+        ? `\nThe working agent claimed completion: ${goal.completionClaim.reason}\n`
+        : "";
+    return `<completion-condition>
 ${goal.objective}
 </completion-condition>
 ${claim}

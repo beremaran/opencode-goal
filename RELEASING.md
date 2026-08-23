@@ -9,18 +9,18 @@ The package is published as `@beremaran/opencode-goal`.
 1. Sign in to npm with an account that can publish the `@beremaran` scope.
 2. Seed the package from a clean `main` checkout:
 
-   ```bash
-   npm ci
-   npm run check
-   npm publish --access public
-   ```
+    ```bash
+    npm ci
+    npm run check
+    npm publish --access public
+    ```
 
 3. In the package settings on npmjs.com, configure GitHub Actions as a trusted
    publisher:
-   - Organization or user: `beremaran`
-   - Repository: `opencode-goal`
-   - Workflow filename: `publish.yml`
-   - Environment: leave blank
+    - Organization or user: `beremaran`
+    - Repository: `opencode-goal`
+    - Workflow filename: `publish.yml`
+    - Environment: leave blank
 
 No npm token or repository secret is needed after trusted publishing is
 configured.
