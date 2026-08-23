@@ -15,7 +15,11 @@ export function activeGoalContext(goal: GoalState): string {
 <progress>${progressContext(goal)}</progress>
 </active-goal>
 
-Keep working toward this objective while it is active. Do not claim completion without concrete evidence. Use update_goal with status "complete" when the objective is genuinely achieved, or "blocked" only after the same external blocker has recurred for at least three goal turns.`;
+The goal is active. Follow these rules:
+- Keep working until the objective is complete.
+- Do not claim completion without concrete evidence.
+- Call update_goal with status "complete" only when the objective is genuinely complete.
+- Call update_goal with status "blocked" only after the same external blocker has prevented progress for at least three goal turns.`;
 }
 
 export function startingPrompt(goal: GoalState): string {
@@ -24,9 +28,14 @@ export function startingPrompt(goal: GoalState): string {
 <progress>${progressContext(goal)}</progress>
 </goal>
 
-Work toward this completion condition now. Continue making concrete progress until it is genuinely satisfied. Verify the result with the strongest practical evidence available, and surface that evidence in your response so an independent evaluator can judge it.
+Start working on this goal now.
 
-Do not stop merely because the work is difficult, lengthy, or would benefit from another turn. If you believe the objective is complete, call update_goal with status "complete" and a concise evidence-based reason before ending your turn. Mark it "blocked" only after the same external blocker has prevented progress for at least three goal turns.`;
+- Keep working until the completion condition is genuinely satisfied.
+- Make concrete progress and verify the result.
+- Include the strongest practical evidence in your response.
+- Do not stop because the work is difficult, lengthy, or would benefit from another turn.
+- If the goal is complete, call update_goal with status "complete" and a short, evidence-based reason before ending your turn.
+- Mark the goal "blocked" only after the same external blocker has prevented progress for at least three goal turns.`;
 }
 
 export function continuationPrompt(goal: GoalState): string {
@@ -36,22 +45,28 @@ export function continuationPrompt(goal: GoalState): string {
 <evaluation>${escapeXmlText(goal.lastReason ?? "The completion condition is not yet established.")}</evaluation>
 </goal-continuation>
 
-The goal remains active. Continue from the current state and address the evaluator's reason. Make concrete progress, verify it, and surface the evidence. Do not simply restate the plan or ask whether to continue.
+The goal is still active. Continue working on it.
 
-If the objective is genuinely complete, call update_goal with status "complete" and a concise evidence-based reason. Mark it "blocked" only after the same external blocker has prevented progress for at least three goal turns.`;
+The last evaluator reason is in <evaluation>. Address it directly.
+- Make concrete progress.
+- Verify the result.
+- Include the evidence in your response.
+- Do not repeat your plan or ask whether to continue.
+- If the goal is complete, call update_goal with status "complete" and a short, evidence-based reason.
+- Mark the goal "blocked" only after the same external blocker has prevented progress for at least three goal turns.`;
 }
 
 export function statusPrompt(goal: GoalState | undefined): string {
     if (!goal) {
-        return "This is a goal status request. Tell the user there is no goal for this session. Do not start unrelated work.";
+        return "Report that there is no goal for this session. Do not start unrelated work.";
     }
-    return `This is a goal status request. Report the following state concisely without starting unrelated work:
+    return `Report the current goal status briefly. Do not start unrelated work:
 
 ${goalSummary(goal)}`;
 }
 
 export function helpPrompt(): string {
-    return `Explain this plugin's /goal syntax concisely:
+    return `Explain this plugin's /goal commands briefly:
 
 /goal <completion condition>
 /goal
@@ -59,18 +74,24 @@ export function helpPrompt(): string {
 /goal resume
 /goal clear
 
-Mention that active goals are independently evaluated after each turn and automatically continue until complete, paused, cleared, or blocked.`;
+Mention that an independent evaluator checks active goals after each turn. Active goals continue automatically until they are complete, paused, cleared, or blocked.`;
 }
 
 export function actionPrompt(message: string): string {
-    return `This is a goal-control request. Tell the user: ${message} Do not start unrelated work.`;
+    return `Tell the user: ${message}
+
+Do not start unrelated work.`;
 }
 
-export const EVALUATOR_SYSTEM_PROMPT = `You are a conservative completion evaluator for a long-running coding-agent goal.
+export const EVALUATOR_SYSTEM_PROMPT = `You are an independent evaluator for a long-running coding goal.
 
-Judge only whether the stated completion condition is fully satisfied based on evidence surfaced in the transcript. Do not call tools. Do not assume unreported work succeeded. If tests, builds, or checks are part of the condition, require transcript evidence that they ran and passed. If any required work remains, return complete=false.
+Decide whether the completion condition is fully satisfied using only evidence in the transcript.
+- Do not call tools.
+- Do not assume unreported work succeeded.
+- If the condition requires tests, builds, or checks, require transcript evidence that they ran and passed.
+- If any required work remains, set "complete" to false.
 
-Return exactly one JSON object with this shape and no markdown:
+Return exactly one JSON object with no markdown:
 {"complete":false,"reason":"one short, actionable sentence"}`;
 
 export function evaluatorPrompt(goal: GoalState, transcript: string): string {
@@ -78,12 +99,12 @@ export function evaluatorPrompt(goal: GoalState, transcript: string): string {
         ? `\nThe working agent claimed completion: ${goal.completionClaim.reason}\n`
         : "";
     return `<completion-condition>
-${goal.objective}
+${escapeXmlText(goal.objective)}
 </completion-condition>
 ${claim}
 <transcript>
 ${transcript}
 </transcript>
 
-Is the completion condition fully satisfied? Return the required JSON object.`;
+Check whether the completion condition is fully satisfied. Return the required JSON object.`;
 }
