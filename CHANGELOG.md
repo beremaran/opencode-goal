@@ -24,7 +24,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 
-- OpenCode 2 beta compatibility through the dual-runtime server entrypoint,
+- OpenCode 2 compatibility through the dual-runtime server entrypoint,
   V2 model tools, event-backed transcript accounting, session context
   injection, and the V2 TUI sidebar and `/goal` keymap command.
 

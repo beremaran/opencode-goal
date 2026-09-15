@@ -21,8 +21,15 @@ bun install
 bun run check
 ```
 
-To test the plugin in OpenCode, run `bun run build`, add the checkout's absolute
-path to the `plugin` array in `opencode.json`, and restart OpenCode.
+To test the plugin in OpenCode, add the checkout's absolute path to the
+`plugins` array in `opencode.json` and restart OpenCode:
+
+```json
+{
+    "$schema": "https://opencode.ai/config.json",
+    "plugins": ["/absolute/path/to/opencode-goal"]
+}
+```
 
 ## Pull requests
 
