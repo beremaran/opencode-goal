@@ -7,6 +7,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-09-15
+
+### Changed
+
+- Updated installation, configuration, runtime, and local development guidance
+  for OpenCode 2.
+- Aligned package entrypoint and repository metadata with the OpenCode 2 plugin.
+
 ## [0.4.1] - 2026-08-23
 
 ### Fixed
@@ -55,7 +63,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Provider failure and user interruption safeguards.
 - Strict type checking and automated behavioral tests.
 
-[Unreleased]: https://github.com/beremaran/opencode-goal/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/beremaran/opencode-goal/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/beremaran/opencode-goal/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/beremaran/opencode-goal/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/beremaran/opencode-goal/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/beremaran/opencode-goal/compare/v0.2.0...v0.3.0

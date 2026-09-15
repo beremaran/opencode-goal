@@ -1,6 +1,6 @@
 {
     "name": "@beremaran/opencode-goal",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "description": "Persistent, independently evaluated /goal workflows for OpenCode 2",
     "type": "module",
     "license": "MIT",
