@@ -55,8 +55,7 @@
         "lint": "eslint .",
         "package:check": "npm pack --dry-run --ignore-scripts",
         "security:audit": "bun audit --audit-level=high",
-        "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run package:check",
-        "prepack": "npm run build"
+        "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run package:check"
     },
     "keywords": [
         "opencode",
