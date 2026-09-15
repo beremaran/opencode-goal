@@ -1,6 +1,6 @@
 {
     "name": "@beremaran/opencode-goal",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "Persistent, independently evaluated /goal workflows for OpenCode 2",
     "type": "module",
     "license": "MIT",
@@ -46,7 +46,6 @@
     },
     "packageManager": "bun@1.2.23",
     "scripts": {
-        "build": "tsc -p tsconfig.json",
         "typecheck": "tsc -p tsconfig.json --noEmit",
         "test": "tsc -p tsconfig.test.json && node --test .test-dist/test/*.test.js",
         "test:coverage": "tsc -p tsconfig.test.json && node --test --experimental-test-coverage --test-coverage-include=.test-dist/src/** --test-coverage-lines=65 --test-coverage-branches=60 --test-coverage-functions=70 .test-dist/test/*.test.js",
@@ -55,7 +54,7 @@
         "lint": "eslint .",
         "package:check": "npm pack --dry-run --ignore-scripts",
         "security:audit": "bun audit --audit-level=high",
-        "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run package:check"
+        "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run package:check"
     },
     "keywords": [
         "opencode",
@@ -67,16 +66,22 @@
         "automation"
     ],
     "dependencies": {
-        "@opencode-ai/plugin": "^1.18.10",
         "zod": "^4.1.8"
     },
     "peerDependencies": {
+        "@opencode-ai/plugin": "^1.18.10 || ^0.0.0-beta",
         "@opentui/core": ">=0.4.5",
         "@opentui/keymap": ">=0.4.5",
         "@opentui/solid": ">=0.4.5",
         "solid-js": "1.9.12"
     },
+    "peerDependenciesMeta": {
+        "@opencode-ai/plugin": {
+            "optional": true
+        }
+    },
     "devDependencies": {
+        "@opencode-ai/plugin": "^1.18.10",
         "@eslint/js": "^10.0.1",
         "@opentui/core": "^0.4.5",
         "@opentui/keymap": "^0.4.5",

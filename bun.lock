@@ -4,11 +4,11 @@
     "": {
       "name": "@beremaran/opencode-goal",
       "dependencies": {
-        "@opencode-ai/plugin": "^1.18.10",
         "zod": "^4.1.8",
       },
       "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@opencode-ai/plugin": "^1.18.10",
         "@opentui/core": "^0.4.5",
         "@opentui/keymap": "^0.4.5",
         "@opentui/solid": "^0.4.5",
@@ -20,11 +20,15 @@
         "typescript-eslint": "^8.67.0",
       },
       "peerDependencies": {
+        "@opencode-ai/plugin": "^1.18.10 || ^0.0.0-beta",
         "@opentui/core": ">=0.4.5",
         "@opentui/keymap": ">=0.4.5",
         "@opentui/solid": ">=0.4.5",
         "solid-js": "1.9.12",
       },
+      "optionalPeers": [
+        "@opencode-ai/plugin",
+      ],
     },
   },
   "packages": {
