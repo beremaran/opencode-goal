@@ -1,1 +1,1 @@
-export {GoalPlugin, default} from "./plugin/v1.js";
+export {setupV2, default} from "./plugin/v2.js";

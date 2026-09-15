@@ -58,10 +58,9 @@ function eventQueue() {
     };
 }
 
-test("exposes a dual-runtime root and an explicit V2 entrypoint", () => {
+test("exposes the V2 root and explicit V2 entrypoint", () => {
     assert.equal(typeof rootPlugin, "object");
     assert.equal(rootPlugin.id, "opencode-goal");
-    assert.equal(typeof rootPlugin.server, "function");
     assert.equal(typeof rootPlugin.setup, "function");
     assert.equal(v2Plugin.id, "opencode-goal");
     assert.equal(typeof v2Plugin.setup, "function");
