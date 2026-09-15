@@ -49,10 +49,6 @@
         "opencode": ">=2.0.0"
     },
     "packageManager": "bun@1.2.23",
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "scripts": {
         "build": "tsc -p tsconfig.json",
         "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -64,8 +60,7 @@
         "package:check": "npm pack --dry-run --ignore-scripts",
         "security:audit": "bun audit --audit-level=high",
         "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm run package:check",
-        "prepack": "npm run build",
-        "prepublishOnly": "npm run check"
+        "prepack": "npm run build"
     },
     "keywords": [
         "opencode",

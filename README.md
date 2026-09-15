@@ -1,8 +1,7 @@
 # OpenCode Goal
 
 [![CI](https://github.com/beremaran/opencode-goal/actions/workflows/ci.yml/badge.svg)](https://github.com/beremaran/opencode-goal/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/@beremaran/opencode-goal)](https://www.npmjs.com/package/@beremaran/opencode-goal)
-[![license](https://img.shields.io/npm/l/@beremaran/opencode-goal)](LICENSE)
+[![license](https://img.shields.io/github/license/beremaran/opencode-goal)](LICENSE)
 
 A persistent `/goal` workflow for [OpenCode](https://opencode.ai): define a
 completion condition once, let OpenCode work across turns, and stop only when
@@ -27,8 +26,8 @@ Install the package directly from GitHub with the current OpenCode CLI:
 opencode plugin add github:beremaran/opencode-goal
 ```
 
-No npm publication is required. For project-local configuration or plugin
-options, add the package to `opencode.json`:
+For project-local configuration or plugin options, add the package to
+`opencode.json`:
 
 ```json
 {
@@ -196,8 +195,7 @@ To load the checkout directly in OpenCode 2, add its absolute path to
 OpenCode loads the TypeScript source through the package exports. Restart it if
 a local source change is not picked up.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and
-[RELEASING.md](RELEASING.md) for maintainer release instructions.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
 
 ## License
 
